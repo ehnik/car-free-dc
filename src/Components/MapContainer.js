@@ -11,8 +11,7 @@ export default class MapContainer extends React.Component {
     }
     this.initMap = this.initMap.bind(this);
     this.changeLocation = this.changeLocation.bind(this);
-    this.getDirections = this.getDirections.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    //this.getDirections = this.getDirections.bind(this);
   }
 
   componentDidMount(){
@@ -30,19 +29,13 @@ export default class MapContainer extends React.Component {
       center: dcCoords, //coordinates of DC
       zoom: 12
     });
-
     this.setState({map});
-
-    let marker = new google.maps.Marker({
-        position: dcCoords,
-        map: map
-    });
-
 
     //initialize autocomplete features for orign/destination fields
     const autoDestination = new google.maps.places.Autocomplete(this.refs.autoDestination);
     const autoOrigin = new google.maps.places.Autocomplete(this.refs.autoOrigin);
 
+    //triggers changeLocation function when autocomplete field is changed
     autoDestination.addListener('place_changed', ()=>this.changeLocation('destination'));
     autoOrigin.addListener('place_changed', ()=>this.changeLocation('origin'));
 
@@ -51,17 +44,15 @@ export default class MapContainer extends React.Component {
     this.setState({autoOrigin});
 
     //adds direction rendering featuers to state
-    //this.setState({directionsService: new google.maps.DirectionsService()});
-    //this.setState({directionsDisplay: new google.maps.DirectionsRenderer()});
-
-    //this.state.directionsDisplay.setMap(this.state.map);
-    //this.getDirections();
+    this.setState({directionsService: new google.maps.DirectionsService()});
+    this.setState({directionsDisplay: new google.maps.DirectionsRenderer()});
+    this.state.directionsDisplay.setMap(this.state.map);
   }
 
   changeLocation(location) {
     let newState = {}
     let coordinates = {};
-    let map = this.state.map;
+    let newMarker;
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -72,12 +63,23 @@ export default class MapContainer extends React.Component {
       coordinates['lng'] = this.state.autoOrigin.getPlace().geometry.location.lng();
     }
 
-    let marker = new google.maps.Marker({
-        position: coordinates,
-        map: map
+    //removes exisiting marker
+    let state = this.state
+    if(state[location+"Marker"]!=null){
+      let marker = state[location+"Marker"]
+      marker.setMap(null)
+      marker = null;
+    }
+    //creates new marker and adds it to state
+    newMarker = new google.maps.Marker({
+      position: coordinates,
+      map: this.state.map
     });
+    newState[location+"Marker"]=newMarker;
+
     newState[location]=coordinates
-    newState = Object.assign({}, newState, {map})
+
+    //adds new origin coordinates and marker data to state
     this.setState(newState)
   }
 
@@ -87,7 +89,7 @@ export default class MapContainer extends React.Component {
     var request = {
       origin: this.state.origin,
       destination: this.state.destination,
-      travelMode: 'DRIVING'
+      travelMode: 'WALKING'
     };
 
     this.state.directionsService.route(request, (response, status) =>{ //requests directions for route
@@ -96,11 +98,7 @@ export default class MapContainer extends React.Component {
       this.setState({duration: response.routes[0].legs[0].duration})
       }
     });
-  }
-
-
-  handleSubmit(event) {
-    event.preventDefault();
+    
   }
 
   render(){
