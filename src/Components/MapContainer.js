@@ -11,7 +11,7 @@ export default class MapContainer extends React.Component {
     }
     this.initMap = this.initMap.bind(this);
     this.changeLocation = this.changeLocation.bind(this);
-    //this.getDirections = this.getDirections.bind(this);
+    this.getDirections = this.getDirections.bind(this);
   }
 
   componentDidMount(){
@@ -84,7 +84,8 @@ export default class MapContainer extends React.Component {
   }
 
 
-  getDirections(){
+  getDirections(event){
+    event.preventDefault()
 
     var request = {
       origin: this.state.origin,
@@ -95,17 +96,18 @@ export default class MapContainer extends React.Component {
     this.state.directionsService.route(request, (response, status) =>{ //requests directions for route
     if (status == 'OK') {
       this.state.directionsDisplay.setDirections(response); //displays directions
-      this.setState({duration: response.routes[0].legs[0].duration})
+      this.setState({duration: response.routes[0].legs[0].duration.text})
+      console.log(this.state.duration)
       }
     });
-    
+
   }
 
   render(){
       return (
         <div>
             <div ref="map" id="map" style={{height: '55%', width: '100%', position: 'absolute'}}/>
-            <form onSubmit={this.handleSubmit} style={{height: '50%', width: '50%', position: 'relative'}}>
+            <form onSubmit={(event)=>this.getDirections(event)} style={{height: '50%', width: '50%', position: 'relative'}}>
               <label>
                 From:
                 <input id="origin" type="text" ref="autoOrigin"/>
