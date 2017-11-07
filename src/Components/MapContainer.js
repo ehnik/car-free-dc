@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './map.css';
 import addScript from '../../utils/addScript'
+import getTrainData from '../../utils/wmataApi'
 
 export default class MapContainer extends React.Component {
 
@@ -18,6 +19,8 @@ export default class MapContainer extends React.Component {
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
+    // Asynchronously load the WMATA script
+
   }
 
   initMap() {
@@ -83,9 +86,29 @@ export default class MapContainer extends React.Component {
     this.setState(newState)
   }
 
+  clearMarkers(){
+    let state = this.state;
+    let marker;
+    if(state['destinationMarker']!=null){
+      marker = state['destinationMarker']
+      marker.setMap(null)
+      marker = null;
+    }
+    if(state['originMarker']!=null){
+      marker = state['originMarker']
+      marker.setMap(null)
+      marker = null;
+    }
+    //creates new marker and adds it to state
+    console.log(state)
+    this.setState({originMarker: null, destinationMarker: null});
+  }
 
   getDirections(event){
     event.preventDefault()
+
+    this.clearMarkers();
+    getTrainData();
 
     var request = {
       origin: this.state.origin,
@@ -96,8 +119,9 @@ export default class MapContainer extends React.Component {
     this.state.directionsService.route(request, (response, status) =>{ //requests directions for route
     if (status == 'OK') {
       this.state.directionsDisplay.setDirections(response); //displays directions
-      this.setState({duration: response.routes[0].legs[0].duration.text})
-      console.log(this.state.duration)
+      this.setState({durationText: response.routes[0].legs[0].duration.text, duration:
+      response.routes[0].legs[0].duration.value})
+      console.log(this.state)
       }
     });
 
@@ -116,7 +140,7 @@ export default class MapContainer extends React.Component {
                 To:
                 <input id="destination" type="text" ref="autoDestination"/>
               </label>
-              <input type="submit" value="Submit"/>
+              <input type="submit" value="Caclulate directions"/>
             </form>
           <p>Hi</p>
         </div>
