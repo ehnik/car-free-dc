@@ -1,18 +1,23 @@
 import React from 'react';
 import styles from './map.css';
-import addScript from '../../utils/addScript'
-import getTrainData from '../../utils/wmataApi'
+import addScript from '../../utils/addScript';
+import getWalkTime from '../../utils/getWalkTime';
+import getDirections from '../../utils/getDirections';
+//import {getNextTrain, getClosestStation} from '../../utils/wmataData'
 
 export default class MapContainer extends React.Component {
 
   constructor(){
     super()
     this.state={map: null,
-    duration: null
+    origin: null,
+    destination: null
     }
     this.initMap = this.initMap.bind(this);
-    this.changeLocation = this.changeLocation.bind(this);
-    this.getDirections = this.getDirections.bind(this);
+    this.changePoint = this.changePoint.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.clearMarkers = this.clearMarkers.bind(this);
+    this.getClosestMetros = this.getClosestMetros.bind(this);
   }
 
   componentDidMount(){
@@ -20,7 +25,6 @@ export default class MapContainer extends React.Component {
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
     // Asynchronously load the WMATA script
-
   }
 
   initMap() {
@@ -38,9 +42,9 @@ export default class MapContainer extends React.Component {
     const autoDestination = new google.maps.places.Autocomplete(this.refs.autoDestination);
     const autoOrigin = new google.maps.places.Autocomplete(this.refs.autoOrigin);
 
-    //triggers changeLocation function when autocomplete field is changed
-    autoDestination.addListener('place_changed', ()=>this.changeLocation('destination'));
-    autoOrigin.addListener('place_changed', ()=>this.changeLocation('origin'));
+    //triggers changePoint function when autocomplete field is changed
+    autoDestination.addListener('place_changed', ()=>this.changePoint('destination'));
+    autoOrigin.addListener('place_changed', ()=>this.changePoint('origin'));
 
     //adds autocomplete to state
     this.setState({autoDestination});
@@ -52,10 +56,12 @@ export default class MapContainer extends React.Component {
     this.state.directionsDisplay.setMap(this.state.map);
   }
 
-  changeLocation(location) {
+  changePoint(location) {
     let newState = {}
     let coordinates = {};
     let newMarker;
+
+    //saves autcomplete value
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -66,14 +72,15 @@ export default class MapContainer extends React.Component {
       coordinates['lng'] = this.state.autoOrigin.getPlace().geometry.location.lng();
     }
 
-    //removes exisiting marker
+    //removes marker if one exists
     let state = this.state
     if(state[location+"Marker"]!=null){
       let marker = state[location+"Marker"]
       marker.setMap(null)
       marker = null;
     }
-    //creates new marker and adds it to state
+
+    //creates new marker for point and adds it to state
     newMarker = new google.maps.Marker({
       position: coordinates,
       map: this.state.map
@@ -82,11 +89,12 @@ export default class MapContainer extends React.Component {
 
     newState[location]=coordinates
 
-    //adds new origin coordinates and marker data to state
+    //adds new coordinates and marker data to state
     this.setState(newState)
   }
 
   clearMarkers(){
+    //clears all markers on map
     let state = this.state;
     let marker;
     if(state['destinationMarker']!=null){
@@ -100,38 +108,61 @@ export default class MapContainer extends React.Component {
       marker = null;
     }
     //creates new marker and adds it to state
-    console.log(state)
     this.setState({originMarker: null, destinationMarker: null});
   }
 
-  getDirections(event){
+  handleSubmit(event){
     event.preventDefault()
-
     this.clearMarkers();
-    getTrainData();
+    this.getClosestMetros();
+  }
 
-    var request = {
-      origin: this.state.origin,
-      destination: this.state.destination,
-      travelMode: 'WALKING'
-    };
+  getClosestMetros(event){
 
-    this.state.directionsService.route(request, (response, status) =>{ //requests directions for route
-    if (status == 'OK') {
-      this.state.directionsDisplay.setDirections(response); //displays directions
-      this.setState({durationText: response.routes[0].legs[0].duration.text, duration:
-      response.routes[0].legs[0].duration.value})
-      console.log(this.state)
+    if(this.state.destination==null){
+      alert("Please enter a valid destination.")
+    }
+
+    else if(this.state.origin==null){
+      alert("Please enter a valid starting point.")
+    }
+    else{
+      var request = {
+        location: this.state.origin,
+        rankBy: google.maps.places.RankBy.DISTANCE,
+        query: ['metro station'],
+      };
+    }
+
+    this.closestStations = [];
+    this.closestStationsWalkTimes = [];
+
+    //logs station info and walk time to station from origin
+    let getStations = (results, status)=>{
+      let allStations = results;
+      let x = 0;
+      for(x;x<=5;x++){
+        let station = {lat: allStations[x].geometry.location.lat(),
+          lng: allStations[x].geometry.location.lng()};
+          getWalkTime(this.state.origin,station,(walkTime)=>{
+          if(walkTime<2414){
+            this.closestStations.push(allStations[x]);
+            this.closestStationsWalkTimes.push(walkTime);
+          }
+        })
       }
-    });
-
+    }
+    //requests data from API
+    let placesService = new google.maps.places.PlacesService(this.state.map);
+    placesService.textSearch(request, getStations);
   }
 
   render(){
       return (
         <div>
             <div ref="map" id="map" style={{height: '55%', width: '100%', position: 'absolute'}}/>
-            <form onSubmit={(event)=>this.getDirections(event)} style={{height: '50%', width: '50%', position: 'relative'}}>
+            <form onSubmit={(event)=>{this.handleSubmit(event)}}
+            style={{height: '50%', width: '50%', position: 'relative'}}>
               <label>
                 From:
                 <input id="origin" type="text" ref="autoOrigin"/>
@@ -146,4 +177,4 @@ export default class MapContainer extends React.Component {
         </div>
     );
   }
-};
+}
