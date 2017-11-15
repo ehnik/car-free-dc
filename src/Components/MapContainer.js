@@ -117,7 +117,9 @@ export default class MapContainer extends React.Component {
     this.getClosestMetros();
   }
 
-  getClosestMetros(event){
+  getClosestMetros(){
+
+    console.log(this)
 
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
@@ -134,24 +136,29 @@ export default class MapContainer extends React.Component {
       };
     }
 
-    this.closestStations = [];
-    this.closestStationsWalkTimes = [];
+    let closestStations = [];
+    let closestStationsWalkTimes = [];
 
     //logs station info and walk time to station from origin
     let getStations = (results, status)=>{
       let allStations = results;
       let x = 0;
-      for(x;x<=5;x++){
-        let station = {lat: allStations[x].geometry.location.lat(),
+      for(x;x<5;x++){
+        let stationCoords = {lat: allStations[x].geometry.location.lat(),
           lng: allStations[x].geometry.location.lng()};
-          getWalkTime(this.state.origin,station,(walkTime)=>{
+        let station = allStations[x];
+          getWalkTime(this.state.origin,stationCoords,(walkTime)=>{
           if(walkTime<2414){
-            this.closestStations.push(allStations[x]);
-            this.closestStationsWalkTimes.push(walkTime);
+            closestStations.push(station);
+            closestStationsWalkTimes.push(walkTime);
+            this.setState({closestStations,closestStationsWalkTimes})
           }
         })
       }
+      console.log(this);
     }
+
+
     //requests data from API
     let placesService = new google.maps.places.PlacesService(this.state.map);
     placesService.textSearch(request, getStations);
