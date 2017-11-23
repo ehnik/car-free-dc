@@ -113,12 +113,11 @@ export default class MapContainer extends React.Component {
 
   handleSubmit(event){
     event.preventDefault()
-    this.clearMarkers();
     this.getClosestMetros();
   }
 
   getClosestMetros(event){
-
+    console.log("hello")
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
     }
@@ -127,29 +126,35 @@ export default class MapContainer extends React.Component {
       alert("Please enter a valid starting point.")
     }
     else{
-      var request = {
+      console.log("sending request")
+      var request = { //request for all metro stations within 500 meters
         location: this.state.origin,
-        rankBy: google.maps.places.RankBy.DISTANCE,
-        query: ['metro station'],
-      };
+        radius: '2414',
+        query: 'metro station'
+        };
     }
 
-    this.closestStations = [];
-    this.closestStationsWalkTimes = [];
+    this.originStations = [];
 
     //logs station info and walk time to station from origin
     let getStations = (results, status)=>{
       let allStations = results;
+      console.log(allStations)
       let x = 0;
-      for(x;x<=5;x++){
+      let overThirtyMin = false;
+      while(!overThirtyMin&&x<allStations.length){
         let station = {lat: allStations[x].geometry.location.lat(),
           lng: allStations[x].geometry.location.lng()};
           getWalkTime(this.state.origin,station,(walkTime)=>{
-          if(walkTime<2414){
-            this.closestStations.push(allStations[x]);
-            this.closestStationsWalkTimes.push(walkTime);
-          }
+            console.log(walkTime)
+            if(walkTime<=1800){//logs all stations within 30min walk
+              this.originStations.push(allStations[x]);
+            }
+            else{
+              overThirtyMin = true;
+            }
         })
+        x++;
       }
     }
     //requests data from API

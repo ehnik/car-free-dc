@@ -10,6 +10,7 @@ export default function getWalkTime(origin, destination, callback){
 
   service.route(request, (response, status) =>{ //requests directions for route
   if (status == 'OK') {
+      console.log(response)
       let walkTime = response.routes[0].legs[0].duration.value;
       callback(walkTime);
     }
