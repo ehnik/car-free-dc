@@ -3,6 +3,10 @@ import styles from './map.css';
 import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/getWalkTime';
 import getDirections from '../../utils/getDirections';
+import getStationCode from '../../utils/getStationCode';
+import getRailRoute from '../../utils/getRailRoute';
+import getRailTripDuration from '../../utils/getRailTripDuration';
+
 //import {getNextTrain, getClosestStation} from '../../utils/wmataData'
 
 export default class MapContainer extends React.Component {
@@ -24,7 +28,6 @@ export default class MapContainer extends React.Component {
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
-    // Asynchronously load the WMATA script
   }
 
   initMap() {
@@ -57,11 +60,11 @@ export default class MapContainer extends React.Component {
   }
 
   changePoint(location) {
+    //saves autcomplete values
+
     let newState = {}
     let coordinates = {};
     let newMarker;
-
-    //saves autcomplete value
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -127,41 +130,59 @@ export default class MapContainer extends React.Component {
     }
     else{
       console.log("sending request")
-      var request = { //request for all metro stations within 500 meters
+      var originRequest = { //request for all metro stations close to origin
+        location: this.state.origin,
+        radius: '2414',
+        query: 'metro station'
+        };
+
+      var destinationRequest = { //request for all metro stations close to origin
         location: this.state.origin,
         radius: '2414',
         query: 'metro station'
         };
     }
 
-    this.originStations = [];
+    this.originStationCodes = [];
+    this.destinationStationCodes = [];
+    //logs station info and walk time to origin to station
 
-    //logs station info and walk time to station from origin
-    let getStations = (results, status)=>{
-      let allStations = results;
-      console.log(allStations)
-      let x = 0;
-      let overThirtyMin = false;
-      while(!overThirtyMin&&x<allStations.length){
-        let station = {lat: allStations[x].geometry.location.lat(),
-          lng: allStations[x].geometry.location.lng()};
-          getWalkTime(this.state.origin,station,(walkTime)=>{
-            console.log(walkTime)
-            if(walkTime<=1800){//logs all stations within 30min walk
-              this.originStations.push(allStations[x]);
+    let saveStations = (results, status, saveArray)=>{
+      if(status=='OK'){
+          let allStations = results;
+          let x = 0;
+          let overTwentyMin = false;
+          while(!overTwentyMin&&x<=3){
+            let stationLocation = {lat: allStations[x].geometry.location.lat(),
+              lng: allStations[x].geometry.location.lng()};
+              getWalkTime(this.state.origin,stationLocation,(walkTime)=>{
+                if(walkTime<=1200){//logs all stations within 30min walk
+                  //this.originStations.push(stationLocation);
+                  getStationCode(stationLocation, (stationCode)=>{
+                  saveArray.push(stationCode)
+                })
+              }
+                else{
+                  overTwentyMin = true;
+                }
+                getRailTripDuration(this.originStationCodes[0], this.destinationStationCodes[0])
+              })
+              x++;
             }
-            else{
-              overThirtyMin = true;
-            }
-        })
-        x++;
-      }
+        }
+  }
+
+    let saveStationsWrapperOrigin = (results,status)=>{
+      saveStations(results, this.originStationCodes)
+    }
+    let saveStationsWrapperDestination = (results,status)=>{
+      saveStations(results, status, this.destinationStationCodes)
     }
     //requests data from API
     let placesService = new google.maps.places.PlacesService(this.state.map);
-    placesService.textSearch(request, getStations);
-  }
-
+    placesService.textSearch(originRequest, saveStationsWrapperOrigin)
+    placesService.textSearch(destinationRequest, saveStationsWrapperDestination)
+}
   render(){
       return (
         <div>
