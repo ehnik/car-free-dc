@@ -3,6 +3,10 @@ import styles from './map.css';
 import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/getWalkTime';
 import getDirections from '../../utils/getDirections';
+import getStationCode from '../../utils/getStationCode';
+import getRailRoute from '../../utils/getRailRoute';
+import getRailTripDuration from '../../utils/getRailTripDuration';
+
 //import {getNextTrain, getClosestStation} from '../../utils/wmataData'
 
 export default class MapContainer extends React.Component {
@@ -24,7 +28,6 @@ export default class MapContainer extends React.Component {
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
-    // Asynchronously load the WMATA script
   }
 
   initMap() {
@@ -57,11 +60,11 @@ export default class MapContainer extends React.Component {
   }
 
   changePoint(location) {
+    //saves autcomplete values
+
     let newState = {}
     let coordinates = {};
     let newMarker;
-
-    //saves autcomplete value
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -113,57 +116,68 @@ export default class MapContainer extends React.Component {
 
   handleSubmit(event){
     event.preventDefault()
-    this.clearMarkers();
     this.getClosestMetros();
   }
 
-  getClosestMetros(){
-
-    console.log(this)
-
+  validateEntry(){
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
+      return false
     }
 
-    else if(this.state.origin==null){
+    if(this.state.origin==null){
       alert("Please enter a valid starting point.")
+      return false
+    }
+  }
+
+  getClosestMetros(event){
+    console.log("hmr testtttthghgh")
+    let valid = this.validateEntry()
+    if(!valid){
+      return false
     }
     else{
-      var request = {
+      var originRequest = { //request for all metro stations close to origin
         location: this.state.origin,
-        rankBy: google.maps.places.RankBy.DISTANCE,
-        query: ['metro station'],
-      };
+        radius: '2414',
+        query: 'metro station'
+        };
+
+      var destinationRequest = { //request for all metro stations close to origin
+        location: this.state.origin,
+        radius: '2414',
+        query: 'metro station'
+        };
     }
 
-    let closestStations = [];
-    let closestStationsWalkTimes = [];
+    this.originStationCodes = [];
+    this.destinationStationCodes = [];
+    //logs station info and walk time to origin to station
 
-    //logs station info and walk time to station from origin
-    let getStations = (results, status)=>{
-      let allStations = results;
-      let x = 0;
-      for(x;x<5;x++){
-        let stationCoords = {lat: allStations[x].geometry.location.lat(),
-          lng: allStations[x].geometry.location.lng()};
-        let station = allStations[x];
-          getWalkTime(this.state.origin,stationCoords,(walkTime)=>{
-          if(walkTime<2414){
-            closestStations.push(station);
-            closestStationsWalkTimes.push(walkTime);
-            this.setState({closestStations,closestStationsWalkTimes})
+    let saveStations = (results, status, saveArray)=>{
+      if(status=='OK'){
+          let allStations = results;
+          for(var x = 2; allStations.length; x++){
+            let x = 0;
+            let stationLocation = {lat: allStations[x].geometry.location.lat(),
+              lng: allStations[x].geometry.location.lng()};
           }
-        })
       }
       console.log(this);
     }
 
-
+    let saveStationsWrapperOrigin = (results,status)=>{
+      saveStations(results, this.originStationCodes)
+    }
+    let saveStationsWrapperDestination = (results,status)=>{
+      saveStations(results, status, this.destinationStationCodes)
+    }
     //requests data from API
     let placesService = new google.maps.places.PlacesService(this.state.map);
-    placesService.textSearch(request, getStations);
-  }
-
+    placesService.textSearch(originRequest, saveStationsWrapperOrigin)
+    placesService.textSearch(destinationRequest, saveStationsWrapperDestination)
+}
   render(){
       return (
         <div>

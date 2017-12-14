@@ -1,4 +1,4 @@
-export default function getWalkTime(origin, destination, callback){
+export default function getWalkTime(origin, destination){
 
   let request = {
     origin,
