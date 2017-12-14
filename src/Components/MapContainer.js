@@ -119,17 +119,25 @@ export default class MapContainer extends React.Component {
     this.getClosestMetros();
   }
 
-  getClosestMetros(event){
-    console.log("hello")
+  validateEntry(){
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
+      return false
     }
 
-    else if(this.state.origin==null){
+    if(this.state.origin==null){
       alert("Please enter a valid starting point.")
+      return false
+    }
+  }
+
+  getClosestMetros(event){
+    console.log("hmr testtttthghgh")
+    let valid = this.validateEntry()
+    if(!valid){
+      return false
     }
     else{
-      console.log("sending request")
       var originRequest = { //request for all metro stations close to origin
         location: this.state.origin,
         radius: '2414',
@@ -150,27 +158,13 @@ export default class MapContainer extends React.Component {
     let saveStations = (results, status, saveArray)=>{
       if(status=='OK'){
           let allStations = results;
-          let x = 0;
-          let overTwentyMin = false;
-          while(!overTwentyMin&&x<=3){
+          for(var x = 2; allStations.length; x++){
+            let x = 0;
             let stationLocation = {lat: allStations[x].geometry.location.lat(),
               lng: allStations[x].geometry.location.lng()};
-              getWalkTime(this.state.origin,stationLocation,(walkTime)=>{
-                if(walkTime<=1200){//logs all stations within 30min walk
-                  //this.originStations.push(stationLocation);
-                  getStationCode(stationLocation, (stationCode)=>{
-                  saveArray.push(stationCode)
-                })
-              }
-                else{
-                  overTwentyMin = true;
-                }
-                getRailTripDuration(this.originStationCodes[0], this.destinationStationCodes[0])
-              })
-              x++;
-            }
-        }
-  }
+          }
+      }
+    }
 
     let saveStationsWrapperOrigin = (results,status)=>{
       saveStations(results, this.originStationCodes)
