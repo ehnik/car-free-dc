@@ -57,7 +57,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/build/";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 82);
@@ -39364,6 +39364,7 @@ var MapContainer = function (_React$Component) {
   _createClass(MapContainer, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      console.log("testing public path");
       window.initMap = this.initMap;
       // Asynchronously load the Google Maps script with callback initMap()
       (0, _addScript2.default)('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places');
@@ -39461,6 +39462,7 @@ var MapContainer = function (_React$Component) {
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
+      console.log("event trigger test");
       event.preventDefault();
       this.getClosestMetros();
     }
@@ -39482,6 +39484,8 @@ var MapContainer = function (_React$Component) {
     value: function getClosestMetros(event) {
       var _this3 = this;
 
+      console.log("event trigger test");
+      console.log((0, _getStationCode2.default)());
       var valid = this.validateEntry();
       if (!valid) {
         return false;
@@ -39671,6 +39675,7 @@ exports.default = getStationCode;
 //takes station location and returns arriving trains
 
 function getStationCode(location) {
+  console.log("HMR testing");
 
   var stationCodeParams = {
     "api_key": "a6e753a87f8d49a086f85f165ace7a05",

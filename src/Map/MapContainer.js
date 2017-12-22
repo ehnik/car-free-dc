@@ -23,13 +23,13 @@ export default class MapContainer extends React.Component {
   }
 
   componentDidMount(){
+    console.log("testing public path encore une fois")
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
   }
 
   initMap() {
-
     let dcCoords = {lat: 38.8951100, lng: -77.0363700};
 
     //initialize map
@@ -108,6 +108,7 @@ export default class MapContainer extends React.Component {
   }
 
   handleSubmit(event){
+    console.log("event trigger test")
     event.preventDefault()
     this.getClosestMetros();
   }
@@ -125,7 +126,7 @@ export default class MapContainer extends React.Component {
   }
 
   getClosestMetros(event){
-    console.log("hello")
+    console.log("event trigger test")
     console.log(getStationCode())
     let valid = this.validateEntry()
     if(!valid){
