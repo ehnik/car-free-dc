@@ -25,7 +25,8 @@
     "react-google-maps": "^8.5.0",
     "recompose": "^0.26.0",
     "style-loader": "^0.19.0",
-    "webpack": "^3.9.1"
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

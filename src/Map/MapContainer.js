@@ -7,8 +7,6 @@ import getStationCode from '../../utils/getStationCode';
 import getRailRoute from '../../utils/getRailRoute';
 import getRailTripDuration from '../../utils/getRailTripDuration';
 
-//import {getNextTrain, getClosestStation} from '../../utils/wmataData'
-
 export default class MapContainer extends React.Component {
 
   constructor(){
@@ -59,12 +57,9 @@ export default class MapContainer extends React.Component {
     this.state.directionsDisplay.setMap(this.state.map);
   }
 
-  changePoint(location) {
-    //saves autcomplete values
+  changePoint(location) { //saves coordinates
 
-    let newState = {}
-    let coordinates = {};
-    let newMarker;
+    let newState = {}, coordinates = {}, newMarker;
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -76,8 +71,7 @@ export default class MapContainer extends React.Component {
     }
 
     //removes marker if one exists
-    let state = this.state
-    if(state[location+"Marker"]!=null){
+    if(this.state[location+"Marker"]){
       let marker = state[location+"Marker"]
       marker.setMap(null)
       marker = null;
@@ -96,8 +90,7 @@ export default class MapContainer extends React.Component {
     this.setState(newState)
   }
 
-  clearMarkers(){
-    //clears all markers on map
+  clearMarkers(){     //clears all markers on map
     let state = this.state;
     let marker;
     if(state['destinationMarker']!=null){
@@ -132,7 +125,8 @@ export default class MapContainer extends React.Component {
   }
 
   getClosestMetros(event){
-    console.log("hmr testtttthghgh")
+    console.log("hello")
+    console.log(getStationCode())
     let valid = this.validateEntry()
     if(!valid){
       return false
@@ -164,7 +158,6 @@ export default class MapContainer extends React.Component {
               lng: allStations[x].geometry.location.lng()};
           }
       }
-      console.log(this);
     }
 
     let saveStationsWrapperOrigin = (results,status)=>{

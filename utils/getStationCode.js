@@ -12,7 +12,7 @@ export default function getStationCode(location){
 //returns data for station entrance closest to submitted location
 
 stationCode = $.ajax({
-            url: "https://api.wmata.com/Rail.svc/json/jStationEntrances?" + $.param(stationCodeParams),
+            url: "https://api.wmata.com/Rail.svc/json/jStationEntrances?",// + $.param(stationCodeParams),
             type: "GET"
   })
 

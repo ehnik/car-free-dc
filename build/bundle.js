@@ -39341,8 +39341,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-//import {getNextTrain, getClosestStation} from '../../utils/wmataData'
-
 var MapContainer = function (_React$Component) {
   _inherits(MapContainer, _React$Component);
 
@@ -39408,11 +39406,11 @@ var MapContainer = function (_React$Component) {
   }, {
     key: 'changePoint',
     value: function changePoint(location) {
-      //saves autcomplete values
+      //saves coordinates
 
-      var newState = {};
-      var coordinates = {};
-      var newMarker = void 0;
+      var newState = {},
+          coordinates = {},
+          newMarker = void 0;
 
       if (location == 'destination') {
         coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -39423,8 +39421,7 @@ var MapContainer = function (_React$Component) {
       }
 
       //removes marker if one exists
-      var state = this.state;
-      if (state[location + "Marker"] != null) {
+      if (this.state[location + "Marker"]) {
         var marker = state[location + "Marker"];
         marker.setMap(null);
         marker = null;
@@ -39485,7 +39482,6 @@ var MapContainer = function (_React$Component) {
     value: function getClosestMetros(event) {
       var _this3 = this;
 
-      console.log("hmr testtttthghgh");
       var valid = this.validateEntry();
       if (!valid) {
         return false;
@@ -39619,16 +39615,15 @@ function getWalkTime(origin, destination) {
 
   var service = new google.maps.DirectionsService();
 
-  return new Promise(function (resolve, reject) {
-    service.route(request, function (response, status) {
-      //requests directions for route
-      if (status == 'OK') {
-        resolve(response.routes[0].legs[0].duration.value);
-      } else {
-        console.log("hi");
-        reject(status);
-      }
-    });
+  //console.log(station)
+
+  service.route(request, function (response, status) {
+    //requests directions for route
+    if (status == 'OK') {
+      var walkTime = response.routes[0].legs[0].duration.value;
+      console.log(walkTime);
+      callback(walkTime);
+    }
   });
 }
 
@@ -39687,7 +39682,7 @@ function getStationCode(location) {
   //returns data for station entrance closest to submitted location
 
   stationCode = $.ajax({
-    url: "https://api.wmata.com/Rail.svc/json/jStationEntrances?" + $.param(stationCodeParams),
+    url: "https://api.wmata.com/Rail.svc/json/jStationEntrances?", // + $.param(stationCodeParams),
     type: "GET"
   });
 
