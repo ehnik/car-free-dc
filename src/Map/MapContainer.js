@@ -6,6 +6,7 @@ import getDirections from '../../utils/getDirections';
 import getStationCode from '../../utils/getStationCode';
 import getRailRoute from '../../utils/getRailRoute';
 import getRailTripDuration from '../../utils/getRailTripDuration';
+import testApi from '../../utils/testApi';
 
 export default class MapContainer extends React.Component {
 
@@ -23,7 +24,8 @@ export default class MapContainer extends React.Component {
   }
 
   componentDidMount(){
-    console.log("testing public path encore une fois")
+    getStationCode()
+    console.log("testing public path encore une fois!!!!")
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
@@ -127,7 +129,7 @@ export default class MapContainer extends React.Component {
 
   getClosestMetros(event){
     console.log("event trigger test")
-    console.log(getStationCode())
+    console.log("test")
     let valid = this.validateEntry()
     if(!valid){
       return false

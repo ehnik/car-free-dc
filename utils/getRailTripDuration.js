@@ -9,7 +9,7 @@ export default function getRailTripDuration(startCode,endCode){
 
   $.ajax({
     url: "https://api.wmata.com/Rail.svc/json/jSrcStationToDstStationInfo?" + $.param(params),
-    type: "GET",
+    type: "GET"
   })
   .then(function(data){
     console.log(data)

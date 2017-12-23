@@ -57,7 +57,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/build/";
+/******/ 	__webpack_require__.p = "./build/";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 82);
@@ -39321,15 +39321,11 @@ var _getDirections = __webpack_require__(192);
 
 var _getDirections2 = _interopRequireDefault(_getDirections);
 
-var _getStationCode = __webpack_require__(193);
-
-var _getStationCode2 = _interopRequireDefault(_getStationCode);
-
-var _getRailRoute = __webpack_require__(194);
+var _getRailRoute = __webpack_require__(193);
 
 var _getRailRoute2 = _interopRequireDefault(_getRailRoute);
 
-var _getRailTripDuration = __webpack_require__(195);
+var _getRailTripDuration = __webpack_require__(194);
 
 var _getRailTripDuration2 = _interopRequireDefault(_getRailTripDuration);
 
@@ -39340,6 +39336,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+//import getStationCode from '../../utils/getStationCode';
+
 
 var MapContainer = function (_React$Component) {
   _inherits(MapContainer, _React$Component);
@@ -39364,7 +39362,7 @@ var MapContainer = function (_React$Component) {
   _createClass(MapContainer, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      console.log("testing public path");
+      console.log("testing public path encore une fois!!!!");
       window.initMap = this.initMap;
       // Asynchronously load the Google Maps script with callback initMap()
       (0, _addScript2.default)('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places');
@@ -39485,7 +39483,7 @@ var MapContainer = function (_React$Component) {
       var _this3 = this;
 
       console.log("event trigger test");
-      console.log((0, _getStationCode2.default)());
+      console.log("test");
       var valid = this.validateEntry();
       if (!valid) {
         return false;
@@ -39671,41 +39669,6 @@ function getDirections(origin, destination, mode) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = getStationCode;
-//takes station location and returns arriving trains
-
-function getStationCode(location) {
-  console.log("HMR testing");
-
-  var stationCodeParams = {
-    "api_key": "a6e753a87f8d49a086f85f165ace7a05",
-    "Lat": location.lat,
-    "Lon": location.lng,
-    "Radius": "500"
-  };
-
-  //returns data for station entrance closest to submitted location
-
-  stationCode = $.ajax({
-    url: "https://api.wmata.com/Rail.svc/json/jStationEntrances?", // + $.param(stationCodeParams),
-    type: "GET"
-  });
-
-  /*stationCode.done(function(data){
-      callback(data)
-    })*/
-}
-
-/***/ }),
-/* 194 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.default = getRailRoute;
 function getRailRoute(origin, destination) {
 
@@ -39734,7 +39697,7 @@ function getRailRoute(origin, destination) {
 }
 
 /***/ }),
-/* 195 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
