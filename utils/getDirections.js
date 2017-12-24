@@ -1,4 +1,6 @@
-export default function getDirections(origin, destination,mode){
+//retrieves and displays directions from Google Maps
+
+export default function getDirections(service,origin, destination,mode){
 
   var request = {
     origin,
@@ -6,7 +8,6 @@ export default function getDirections(origin, destination,mode){
     travelMode: mode,
   };
 
-  let service = new google.maps.DirectionsService()
   let display = new google.maps.DirectionsRenderer()
 
   service.route(request, (response, status) =>{ //requests directions for route

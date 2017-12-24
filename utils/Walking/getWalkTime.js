@@ -1,4 +1,4 @@
-export default function getWalkTime(origin, destination){
+export default function getWalkTime(service, origin, destination,callback){
 
   let request = {
     origin,
@@ -6,14 +6,11 @@ export default function getWalkTime(origin, destination){
     travelMode: 'WALKING',
   };
 
-  let service = new google.maps.DirectionsService;
-
   //console.log(station)
 
   service.route(request, (response, status) =>{ //requests directions for route
   if (status == 'OK') {
-      let walkTime = response.routes[0].legs[0].duration.value;
-      console.log(walkTime)
+      let walkTime = response.routes[0].legs[0].duration.text;
       callback(walkTime);
     }
   });

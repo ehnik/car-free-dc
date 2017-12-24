@@ -1,7 +1,7 @@
-export default function testApi(data) { //loads script
+export default function postApi(data,url) { //loads script
     console.log(data)
     let testCall = $.ajax({
-              url: "http://localhost:3000/api/stations",
+              url: "http://localhost:3000/api/" + url,
               dataType: "json",
               contentType: "application/json",
               data: JSON.stringify(data),

@@ -1,5 +1,5 @@
 //takes station location and returns arriving trains
-import testApi from './testApi'
+import postApi from './postApi'
 
 export default function getStationList(){
 
@@ -19,7 +19,7 @@ let stations = $.ajax({
 
 stations.done(function(data){
       for(let station of data['Stations']){
-      testApi(station);
+      postApi(station);
     }
   })
 }

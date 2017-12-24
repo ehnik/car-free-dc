@@ -1,12 +1,11 @@
 import React from 'react';
 import styles from './map.css';
 import addScript from '../../utils/addScript';
-import getWalkTime from '../../utils/getWalkTime';
+import getWalkTime from '../../utils/Walking/getWalkTime';
 import getDirections from '../../utils/getDirections';
-//import getStationCode from '../../utils/getStationCode';
-import getRouteInfo from '../../utils/getRouteDuration';
-import testApi from '../../utils/testApi';
-import getStationCode from '../../utils/getStationCode';
+import getMetroTime from '../../utils/Metro/getMetroTime';
+//import getStationCode from '../../utils/Metro/getStationCode';
+//import addApiKey from '../../utils/addApiKey';
 
 export default class MapContainer extends React.Component {
 
@@ -15,7 +14,7 @@ export default class MapContainer extends React.Component {
     this.state={map: null,
     origin: null,
     destination: null,
-    walkingDuration: "lolz"
+    walkingDuration: null
     }
     this.initMap = this.initMap.bind(this);
     this.changePoint = this.changePoint.bind(this);
@@ -134,13 +133,18 @@ export default class MapContainer extends React.Component {
       return false
     }
     else{
-      let walkingRoute = getRouteInfo(this.state.directionsService, 'WALKING',
+
+      getWalkTime(this.state.directionsService, this.state.origin, this.state.destination,
+        (data) => {
+        this.setState({walkingDuration: data})
+      })
+      /*getRouteInfo(this.state.directionsService, 'WALKING',
       this.state.origin, this.state.destination,
           (data) => {
           this.setState({walkingDuration: data})
-        });
+        });*/
 
-      let transitRoute = getRouteInfo(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination,
+      getMetroTime(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination,
           (data) => {
           this.setState({transitDuration: data})
       });
@@ -166,6 +170,7 @@ export default class MapContainer extends React.Component {
               </label>
               <input type="submit" value="Caclulate directions"/>
             </form>
+          <h3 style={{top: '55%', width: '50%', position: 'absolute'}}>Current Time Estimates</h3>
           <p style={{top: '70%', width: '50%', position: 'absolute'}}>Walking: {walkingDuration}</p>
           <p style={{top: '75%', width: '50%', position: 'absolute'}}>Metro: {transitDuration}</p>
         </div>
