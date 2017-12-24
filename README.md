@@ -1,2 +1,8 @@
+1) This application accesses station data via a small api.
 
-1) This application uses a small API that I built.
+//fastest metro route is calculated by combining recommended google metro routes
+and real-time WMATA rail data. Since google's algorithm appears to factor in
+average waiting time, this app.
+
+At the moment, a trip that requires transferring lines factors in the wait time
+(if available)

@@ -1,25 +1,63 @@
-//takes station location and returns arriving trains
-import testApi from './testApi'
+//getStationCode
+export default function getStationCode(name,line,callback) {
+  //Unfortunately, Google and WMATA have slightly different naming conventions
+  //for metro stations. Therefore, the WMATA-populated
+  //station database can't be filtered using Google API-generated station names.
+  //However, the first word of the station is consistent across APIs, so
+  //it works to search the database with the first word of the Google-generated
+  //name. There are two pairs of stations (Pentagon and Pentagon City;
+  //Farragut West and Farragut North) with identical first words, so the
+  //entire term is used to search in these cases (these stations are consistent
+  //in both APIs)
 
-export default function getStationCode(){
+  switch(line) {
+    case 'Green':
+        line = 'GR'
+        break;
+    case 'Silver':
+        line = 'SV'
+        break;
+    case 'Orange':
+        line = 'OR'
+        break;
+    case 'Red':
+        line = 'RD'
+        break;
+    case 'Blue':
+        line = 'BL'
+        break;
+    case 'Yellow':
+        line = 'YL'
+        break;
+  }
 
-  var stationCodeParams = {
-            "api_key": "a6e753a87f8d49a086f85f165ace7a05"
-            /*"Lat": location.lat,
-            "Lon": location.lng,
-            "Radius": "500",*/
-  };
+    let wordEnd;
 
-//returns data for station entrance closest to submitted location
-
-let stations = $.ajax({
-            url: "https://api.wmata.com/Rail.svc/json/jStations?" + $.param(stationCodeParams),
-            type: "GET"
-  })
-
-stations.done(function(data){
-      for(let station of data['Stations']){
-      testApi(station);
+    if(name.indexOf(" ")==-1){
+      wordEnd = name.length-1
     }
-  })
-}
+    else{
+      wordEnd = name.indexOf(" ")
+    }
+
+    let searchName = name.substr(0, wordEnd)
+    if(searchName=='Pentagon'||searchName=='Farragut'){
+      searchName = name;
+    }
+
+    console.log(searchName)
+    console.log(line)
+
+    let testCall = $.ajax({
+              url: "http://localhost:3000/api/stations?Name__regex=/"+searchName+
+              "/i&LineCode1__regex=/" + line + "/",
+              dataType: "json",
+              contentType: "application/json",
+              type: "GET",
+              error: function(err){
+                console.log(err)
+              },
+              crossDomain: true
+    })
+    return testCall;
+  }

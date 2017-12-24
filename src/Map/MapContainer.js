@@ -3,10 +3,10 @@ import styles from './map.css';
 import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/getWalkTime';
 import getDirections from '../../utils/getDirections';
-import getStationCode from '../../utils/getStationCode';
-import getRailRoute from '../../utils/getRailRoute';
-import getRailTripDuration from '../../utils/getRailTripDuration';
+//import getStationCode from '../../utils/getStationCode';
+import getRouteInfo from '../../utils/getRouteDuration';
 import testApi from '../../utils/testApi';
+import getStationCode from '../../utils/getStationCode';
 
 export default class MapContainer extends React.Component {
 
@@ -14,7 +14,8 @@ export default class MapContainer extends React.Component {
     super()
     this.state={map: null,
     origin: null,
-    destination: null
+    destination: null,
+    walkingDuration: "lolz"
     }
     this.initMap = this.initMap.bind(this);
     this.changePoint = this.changePoint.bind(this);
@@ -24,8 +25,6 @@ export default class MapContainer extends React.Component {
   }
 
   componentDidMount(){
-    getStationCode()
-    console.log("testing public path encore une fois!!!!")
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
@@ -49,7 +48,7 @@ export default class MapContainer extends React.Component {
     autoDestination.addListener('place_changed', ()=>this.changePoint('destination'));
     autoOrigin.addListener('place_changed', ()=>this.changePoint('origin'));
 
-    //adds autocomplete to state
+    //adds autocomplete fields to state
     this.setState({autoDestination});
     this.setState({autoOrigin});
 
@@ -59,9 +58,10 @@ export default class MapContainer extends React.Component {
     this.state.directionsDisplay.setMap(this.state.map);
   }
 
-  changePoint(location) { //saves coordinates
-
+  changePoint(location) { //saves coordinates and adds marker corresponding to
+    //user-entered destination or origin
     let newState = {}, coordinates = {}, newMarker;
+    console.log("state: " + this.state)
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -72,9 +72,9 @@ export default class MapContainer extends React.Component {
       coordinates['lng'] = this.state.autoOrigin.getPlace().geometry.location.lng();
     }
 
-    //removes marker if one exists
+    //removes marker if one exists for this endpoint
     if(this.state[location+"Marker"]){
-      let marker = state[location+"Marker"]
+      let marker = this.state[location+"Marker"]
       marker.setMap(null)
       marker = null;
     }
@@ -92,7 +92,7 @@ export default class MapContainer extends React.Component {
     this.setState(newState)
   }
 
-  clearMarkers(){     //clears all markers on map
+  clearMarkers(){  //clears all markers on map
     let state = this.state;
     let marker;
     if(state['destinationMarker']!=null){
@@ -110,7 +110,6 @@ export default class MapContainer extends React.Component {
   }
 
   handleSubmit(event){
-    console.log("event trigger test")
     event.preventDefault()
     this.getClosestMetros();
   }
@@ -118,63 +117,40 @@ export default class MapContainer extends React.Component {
   validateEntry(){
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
-      return false
+      return false;
     }
-
-    if(this.state.origin==null){
+    else if(this.state.origin==null){
       alert("Please enter a valid starting point.")
-      return false
+      return false;
+    }
+    else{
+      return true;
     }
   }
 
-  getClosestMetros(event){
-    console.log("event trigger test")
-    console.log("test")
+  getClosestMetros(){
     let valid = this.validateEntry()
     if(!valid){
       return false
     }
     else{
-      var originRequest = { //request for all metro stations close to origin
-        location: this.state.origin,
-        radius: '2414',
-        query: 'metro station'
-        };
+      let walkingRoute = getRouteInfo(this.state.directionsService, 'WALKING',
+      this.state.origin, this.state.destination,
+          (data) => {
+          this.setState({walkingDuration: data})
+        });
 
-      var destinationRequest = { //request for all metro stations close to origin
-        location: this.state.origin,
-        radius: '2414',
-        query: 'metro station'
-        };
+      let transitRoute = getRouteInfo(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination,
+          (data) => {
+          this.setState({transitDuration: data})
+      });
     }
+  }
 
-    this.originStationCodes = [];
-    this.destinationStationCodes = [];
-    //logs station info and walk time to origin to station
 
-    let saveStations = (results, status, saveArray)=>{
-      if(status=='OK'){
-          let allStations = results;
-          for(var x = 2; allStations.length; x++){
-            let x = 0;
-            let stationLocation = {lat: allStations[x].geometry.location.lat(),
-              lng: allStations[x].geometry.location.lng()};
-          }
-      }
-    }
-
-    let saveStationsWrapperOrigin = (results,status)=>{
-      saveStations(results, this.originStationCodes)
-    }
-    let saveStationsWrapperDestination = (results,status)=>{
-      saveStations(results, status, this.destinationStationCodes)
-    }
-    //requests data from API
-    let placesService = new google.maps.places.PlacesService(this.state.map);
-    placesService.textSearch(originRequest, saveStationsWrapperOrigin)
-    placesService.textSearch(destinationRequest, saveStationsWrapperDestination)
-}
   render(){
+      let walkingDuration = this.state.walkingDuration
+      let transitDuration = this.state.transitDuration
       return (
         <div>
             <div ref="map" id="map" style={{height: '55%', width: '100%', position: 'absolute'}}/>
@@ -190,8 +166,8 @@ export default class MapContainer extends React.Component {
               </label>
               <input type="submit" value="Caclulate directions"/>
             </form>
-          <p>Hi</p>
+          <p style={{top: '70%', width: '50%', position: 'absolute'}}>Walking: {walkingDuration}</p>
+          <p style={{top: '75%', width: '50%', position: 'absolute'}}>Metro: {transitDuration}</p>
         </div>
-    );
-  }
+  )}
 }
