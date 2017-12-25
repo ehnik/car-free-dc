@@ -1,4 +1,4 @@
-
+//returns next 
 export default function getNextTrain(stationInfo){
   let stationCode = stationInfo[0]['Code'];
   console.log(stationInfo);

@@ -1,29 +1,51 @@
 .map {
   width: 100%;
   height: 55%;
+  border-bottom: solid black;
+  position: absolute;
 }
 /* Optional: Makes the sample page fill the window. */
-.map html, body {
+.form{
   height: 50%;
-  margin: 0;
-  padding: 0;
-}
-.floating {
-  position: absolute;
-  top: 10px;
-  left: 25%;
-  z-index: 5;
-  background-color: #fff;
-  padding: 5px;
-  border: 1px solid #999;
-  text-align: center;
-  font-family: 'Roboto','sans-serif';
-  line-height: 30px;
-  padding-left: 10px;
+  width: 50%;
+  position: relative;
 }
 
-.warnings  {
+.estimatesContainer{
+  top: 55%;
+  position: absolute;
   width: 100%;
-  height:10%;
+}
+
+.estimatesFlex{
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.estimateText{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.estimates{
+  position: relative;
+  width: 100%;
   text-align: center;
+}
+
+.heading{
+  text-align: center;
+  top: 55%;
+}
+
+.subHeading{
+  font-size: 17;
+}
+
+.walking{
+  top: 70%;
+}
+
+.metro{
+  top: 75%;
 }

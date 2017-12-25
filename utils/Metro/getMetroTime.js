@@ -28,7 +28,7 @@ service.route(request, function(response, status){ //get Google Maps route
 
     if(response['routes'].length==0){ //checks if there are any transit routes available
       transitAvailable = false;
-      callback("no route");
+      callback("No metro route available");
       return false;
     }
 

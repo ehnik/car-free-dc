@@ -1,11 +1,10 @@
 import React from 'react';
 import styles from './map.css';
+import classNames from 'classnames';
 import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/Walking/getWalkTime';
 import getDirections from '../../utils/getDirections';
 import getMetroTime from '../../utils/Metro/getMetroTime';
-//import getStationCode from '../../utils/Metro/getStationCode';
-//import addApiKey from '../../utils/addApiKey';
 
 export default class MapContainer extends React.Component {
 
@@ -20,7 +19,7 @@ export default class MapContainer extends React.Component {
     this.changePoint = this.changePoint.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.clearMarkers = this.clearMarkers.bind(this);
-    this.getClosestMetros = this.getClosestMetros.bind(this);
+    this.getRoutes = this.getRoutes.bind(this);
   }
 
   componentDidMount(){
@@ -51,7 +50,7 @@ export default class MapContainer extends React.Component {
     this.setState({autoDestination});
     this.setState({autoOrigin});
 
-    //adds direction rendering featuers to state
+    //adds direction rendering features to state
     this.setState({directionsService: new google.maps.DirectionsService()});
     this.setState({directionsDisplay: new google.maps.DirectionsRenderer()});
     this.state.directionsDisplay.setMap(this.state.map);
@@ -108,12 +107,7 @@ export default class MapContainer extends React.Component {
     this.setState({originMarker: null, destinationMarker: null});
   }
 
-  handleSubmit(event){
-    event.preventDefault()
-    this.getClosestMetros();
-  }
-
-  validateEntry(){
+  validatePlaceEntry(){ //checks for valid autocomplete place values
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
       return false;
@@ -127,22 +121,24 @@ export default class MapContainer extends React.Component {
     }
   }
 
-  getClosestMetros(){
-    let valid = this.validateEntry()
+  handleSubmit(event){
+    event.preventDefault()
+    this.getRoutes();
+  }
+
+  getRoutes(){ //retrieves metro and walking routes between origin and destination
+    let valid = this.validatePlaceEntry()
     if(!valid){
       return false
     }
     else{
+      getDirections(this.state.directionsService,this.state.directionsDisplay,
+      this.state.origin, this.state.destination)
 
       getWalkTime(this.state.directionsService, this.state.origin, this.state.destination,
         (data) => {
         this.setState({walkingDuration: data})
       })
-      /*getRouteInfo(this.state.directionsService, 'WALKING',
-      this.state.origin, this.state.destination,
-          (data) => {
-          this.setState({walkingDuration: data})
-        });*/
 
       getMetroTime(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination,
           (data) => {
@@ -151,15 +147,15 @@ export default class MapContainer extends React.Component {
     }
   }
 
-
   render(){
+      let walkingStyle = 'estimate walking'
       let walkingDuration = this.state.walkingDuration
       let transitDuration = this.state.transitDuration
       return (
         <div>
-            <div ref="map" id="map" style={{height: '55%', width: '100%', position: 'absolute'}}/>
+            <div ref="map" id="map" className={styles.map}/>
             <form onSubmit={(event)=>{this.handleSubmit(event)}}
-            style={{height: '50%', width: '50%', position: 'relative'}}>
+            className={styles.form}>
               <label>
                 From:
                 <input id="origin" type="text" ref="autoOrigin"/>
@@ -170,9 +166,19 @@ export default class MapContainer extends React.Component {
               </label>
               <input type="submit" value="Caclulate directions"/>
             </form>
-          <h3 style={{top: '55%', width: '50%', position: 'absolute'}}>Current Time Estimates</h3>
-          <p style={{top: '70%', width: '50%', position: 'absolute'}}>Walking: {walkingDuration}</p>
-          <p style={{top: '75%', width: '50%', position: 'absolute'}}>Metro: {transitDuration}</p>
+            <div className={classNames(styles.estimatesContainer)}>
+              <h3 className={classNames(styles.estimates,styles.heading)}>Current Time Estimates</h3>
+              <div className={classNames(styles.estimates,styles.estimatesFlex)}>
+                <div className={styles.estimateText}>
+                  <h4 className={styles.subHeading}> Walking </h4>
+                  <p> {walkingDuration} </p>
+                </div>
+                <div className={styles.estimateText}>
+                  <h4 className={styles.subHeading}> Metro </h4>
+                  <p> {transitDuration} </p>
+                </div>
+              </div>
+            </div>
         </div>
   )}
 }

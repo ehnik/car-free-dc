@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const combineLoaders = require('webpack-combine-loaders');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
@@ -15,15 +16,15 @@ module.exports = {
     loaders: [
       { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ },
       { test: /\.jsx$/, loader: 'babel-loader', exclude: /node_modules/ },
-      {
-        loader: ExtractTextPlugin.extract({
-          use: 'css-loader'
-        }),
-        test: /\.css$/
-      }
-    ]
-  },
-  plugins: [
-    new ExtractTextPlugin('style.css')
-  ]
+      { test: /\.css$/, loader: combineLoaders([
+        { loader: 'style-loader'},
+        { loader: 'css-loader',
+          query: {
+          modules: true,
+          localIdentName: '[name]__[local]___[hash:base64:5]'
+          }
+        }
+      ])
+    }]
+  }
 }

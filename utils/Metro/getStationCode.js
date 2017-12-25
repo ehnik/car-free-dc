@@ -1,14 +1,7 @@
 //getStationCode
 export default function getStationCode(name,line,callback) {
-  //Unfortunately, Google and WMATA have slightly different naming conventions
-  //for metro stations. Therefore, the WMATA-populated
-  //station database can't be filtered using Google API-generated station names.
-  //However, the first word of the station is consistent across APIs, so
-  //it works to search the database with the first word of the Google-generated
-  //name. There are two pairs of stations (Pentagon and Pentagon City;
-  //Farragut West and Farragut North) with identical first words, so the
-  //entire term is used to search in these cases (these stations are consistent
-  //in both APIs)
+
+  let lineNum = "LineCode1";
 
   switch(line) {
     case 'Green':
@@ -40,24 +33,62 @@ export default function getStationCode(name,line,callback) {
       wordEnd = name.indexOf(" ")
     }
 
-    let searchName = name.substr(0, wordEnd)
-    if(searchName=='Pentagon'||searchName=='Farragut'){
-      searchName = name;
+    let searchName = "/" + name.substr(0, wordEnd) +"/i" //searches for name based on first word
+
+    console.log(name)
+
+    if(searchName=='/Pentagon/i'){
+      if(name=='Pentagon City Station'){
+        searchName = /pentagon\scity/i
+      }
+    }
+
+    if(searchName=='/Farragut/i'){ //for stations sharing first word, seach whole name
+      if(name=='Farragut West Station'){
+        searchName = /farragut\swest/i
+      }
+      else{
+        searchName = /farragut\snorth/i
+      }
     }
 
     console.log(searchName)
     console.log(line)
 
-    let testCall = $.ajax({
-              url: "http://localhost:3000/api/stations?Name__regex=/"+searchName+
-              "/i&LineCode1__regex=/" + line + "/",
+
+    $.ajax({
+              url: "http://localhost:3000/api/stations?Name__regex="+searchName+
+              "&" + lineNum + "__regex=/" + line + "/",
               dataType: "json",
               contentType: "application/json",
               type: "GET",
-              error: function(err){
-                console.log(err)
-              },
+              error: (err)=>console.log(err),
               crossDomain: true
-    })
-    return testCall;
+            })
+            .then( (res)=>{
+              console.log("response is: " +res.length)
+              if(res.length>0){
+                console.log('returning')
+                return res
+              }
+              else{
+                console.log('trying second call')
+                lineNum = "lineCode2";
+                $.ajax({
+                    url: "http://localhost:3000/api/stations?Name__regex="+searchName+
+                    "&" + lineNum + "__regex=/" + line + "/",
+                    dataType: "json",
+                    contentType: "application/json",
+                    type: "GET",
+                    error: (err)=>console.log(err),
+                    crossDomain: true
+                })
+              .then((res)=>{
+                console.log("second call")
+                if(res.length>0){
+                  return res
+                }
+              })
+            }
+          })
   }

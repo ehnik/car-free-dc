@@ -1,14 +1,12 @@
 //retrieves and displays directions from Google Maps
 
-export default function getDirections(service,origin, destination,mode){
+export default function getDirections(service,display,origin, destination){
 
   var request = {
     origin,
     destination,
-    travelMode: mode,
+    travelMode: 'WALKING',
   };
-
-  let display = new google.maps.DirectionsRenderer()
 
   service.route(request, (response, status) =>{ //requests directions for route
   if (status == 'OK') {
