@@ -6,8 +6,8 @@
   "author": "Kay Ehni <kay.ehnigmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server",
-    "webpack": "webpack"
+    "build": "NODE_ENV=production webpack",
+    "start": "NODE_ENV=development webpack-dev-server"
   },
   "dependencies": {
     "body-parser": "^1.18.2",

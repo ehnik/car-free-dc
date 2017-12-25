@@ -2,11 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const combineLoaders = require('webpack-combine-loaders');
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-
 module.exports = {
-  entry: './src/index.js',
+  entry: './build/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js',

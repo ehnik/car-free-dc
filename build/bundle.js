@@ -57,7 +57,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "./build/";
+/******/ 	__webpack_require__.p = "/build/";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 82);
@@ -39309,25 +39309,25 @@ var _map = __webpack_require__(189);
 
 var _map2 = _interopRequireDefault(_map);
 
-var _addScript = __webpack_require__(190);
+var _classnames = __webpack_require__(194);
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _addScript = __webpack_require__(195);
 
 var _addScript2 = _interopRequireDefault(_addScript);
 
-var _getWalkTime = __webpack_require__(191);
+var _getWalkTime = __webpack_require__(196);
 
 var _getWalkTime2 = _interopRequireDefault(_getWalkTime);
 
-var _getDirections = __webpack_require__(192);
+var _getDirections = __webpack_require__(197);
 
 var _getDirections2 = _interopRequireDefault(_getDirections);
 
-var _getRailRoute = __webpack_require__(193);
+var _getMetroTime = __webpack_require__(198);
 
-var _getRailRoute2 = _interopRequireDefault(_getRailRoute);
-
-var _getRailTripDuration = __webpack_require__(194);
-
-var _getRailTripDuration2 = _interopRequireDefault(_getRailTripDuration);
+var _getMetroTime2 = _interopRequireDefault(_getMetroTime);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -39336,8 +39336,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-//import getStationCode from '../../utils/getStationCode';
-
 
 var MapContainer = function (_React$Component) {
   _inherits(MapContainer, _React$Component);
@@ -39349,20 +39347,20 @@ var MapContainer = function (_React$Component) {
 
     _this.state = { map: null,
       origin: null,
-      destination: null
+      destination: null,
+      walkingDuration: null
     };
     _this.initMap = _this.initMap.bind(_this);
     _this.changePoint = _this.changePoint.bind(_this);
     _this.handleSubmit = _this.handleSubmit.bind(_this);
     _this.clearMarkers = _this.clearMarkers.bind(_this);
-    _this.getClosestMetros = _this.getClosestMetros.bind(_this);
+    _this.getRoutes = _this.getRoutes.bind(_this);
     return _this;
   }
 
   _createClass(MapContainer, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      console.log("testing public path encore une fois!!!!");
       window.initMap = this.initMap;
       // Asynchronously load the Google Maps script with callback initMap()
       (0, _addScript2.default)('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places');
@@ -39393,11 +39391,11 @@ var MapContainer = function (_React$Component) {
         return _this2.changePoint('origin');
       });
 
-      //adds autocomplete to state
+      //adds autocomplete fields to state
       this.setState({ autoDestination: autoDestination });
       this.setState({ autoOrigin: autoOrigin });
 
-      //adds direction rendering featuers to state
+      //adds direction rendering features to state
       this.setState({ directionsService: new google.maps.DirectionsService() });
       this.setState({ directionsDisplay: new google.maps.DirectionsRenderer() });
       this.state.directionsDisplay.setMap(this.state.map);
@@ -39405,11 +39403,12 @@ var MapContainer = function (_React$Component) {
   }, {
     key: 'changePoint',
     value: function changePoint(location) {
-      //saves coordinates
-
+      //saves coordinates and adds marker corresponding to
+      //user-entered destination or origin
       var newState = {},
           coordinates = {},
           newMarker = void 0;
+      console.log("state: " + this.state);
 
       if (location == 'destination') {
         coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -39419,9 +39418,9 @@ var MapContainer = function (_React$Component) {
         coordinates['lng'] = this.state.autoOrigin.getPlace().geometry.location.lng();
       }
 
-      //removes marker if one exists
+      //removes marker if one exists for this endpoint
       if (this.state[location + "Marker"]) {
-        var marker = state[location + "Marker"];
+        var marker = this.state[location + "Marker"];
         marker.setMap(null);
         marker = null;
       }
@@ -39458,90 +39457,64 @@ var MapContainer = function (_React$Component) {
       this.setState({ originMarker: null, destinationMarker: null });
     }
   }, {
-    key: 'handleSubmit',
-    value: function handleSubmit(event) {
-      console.log("event trigger test");
-      event.preventDefault();
-      this.getClosestMetros();
-    }
-  }, {
-    key: 'validateEntry',
-    value: function validateEntry() {
+    key: 'validatePlaceEntry',
+    value: function validatePlaceEntry() {
+      //checks for valid autocomplete place values
       if (this.state.destination == null) {
         alert("Please enter a valid destination.");
         return false;
-      }
-
-      if (this.state.origin == null) {
+      } else if (this.state.origin == null) {
         alert("Please enter a valid starting point.");
         return false;
+      } else {
+        return true;
       }
     }
   }, {
-    key: 'getClosestMetros',
-    value: function getClosestMetros(event) {
+    key: 'handleSubmit',
+    value: function handleSubmit(event) {
+      event.preventDefault();
+      this.getRoutes();
+    }
+  }, {
+    key: 'getRoutes',
+    value: function getRoutes() {
       var _this3 = this;
 
-      console.log("event trigger test");
-      console.log("test");
-      var valid = this.validateEntry();
+      //retrieves metro and walking routes between origin and destination
+      var valid = this.validatePlaceEntry();
       if (!valid) {
         return false;
       } else {
-        var originRequest = { //request for all metro stations close to origin
-          location: this.state.origin,
-          radius: '2414',
-          query: 'metro station'
-        };
+        (0, _getDirections2.default)(this.state.directionsService, this.state.directionsDisplay, this.state.origin, this.state.destination);
 
-        var destinationRequest = { //request for all metro stations close to origin
-          location: this.state.origin,
-          radius: '2414',
-          query: 'metro station'
-        };
+        (0, _getWalkTime2.default)(this.state.directionsService, this.state.origin, this.state.destination, function (data) {
+          _this3.setState({ walkingDuration: data });
+        });
+
+        (0, _getMetroTime2.default)(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination, function (data) {
+          _this3.setState({ transitDuration: data });
+        });
       }
-
-      this.originStationCodes = [];
-      this.destinationStationCodes = [];
-      //logs station info and walk time to origin to station
-
-      var saveStations = function saveStations(results, status, saveArray) {
-        if (status == 'OK') {
-          var allStations = results;
-          for (var x = 2; allStations.length; x++) {
-            var _x = 0;
-            var stationLocation = { lat: allStations[_x].geometry.location.lat(),
-              lng: allStations[_x].geometry.location.lng() };
-          }
-        }
-      };
-
-      var saveStationsWrapperOrigin = function saveStationsWrapperOrigin(results, status) {
-        saveStations(results, _this3.originStationCodes);
-      };
-      var saveStationsWrapperDestination = function saveStationsWrapperDestination(results, status) {
-        saveStations(results, status, _this3.destinationStationCodes);
-      };
-      //requests data from API
-      var placesService = new google.maps.places.PlacesService(this.state.map);
-      placesService.textSearch(originRequest, saveStationsWrapperOrigin);
-      placesService.textSearch(destinationRequest, saveStationsWrapperDestination);
     }
   }, {
     key: 'render',
     value: function render() {
       var _this4 = this;
 
+      var walkingStyle = 'estimate walking';
+      var walkingDuration = this.state.walkingDuration;
+      var transitDuration = this.state.transitDuration;
       return _react2.default.createElement(
         'div',
         null,
-        _react2.default.createElement('div', { ref: 'map', id: 'map', style: { height: '55%', width: '100%', position: 'absolute' } }),
+        _react2.default.createElement('div', { ref: 'map', id: 'map', className: _map2.default.map }),
         _react2.default.createElement(
           'form',
           { onSubmit: function onSubmit(event) {
               _this4.handleSubmit(event);
             },
-            style: { height: '50%', width: '50%', position: 'relative' } },
+            className: _map2.default.form },
           _react2.default.createElement(
             'label',
             null,
@@ -39557,9 +39530,49 @@ var MapContainer = function (_React$Component) {
           _react2.default.createElement('input', { type: 'submit', value: 'Caclulate directions' })
         ),
         _react2.default.createElement(
-          'p',
-          null,
-          'Hi'
+          'div',
+          { className: (0, _classnames2.default)(_map2.default.estimatesContainer) },
+          _react2.default.createElement(
+            'h3',
+            { className: (0, _classnames2.default)(_map2.default.estimates, _map2.default.heading) },
+            'Current Time Estimates'
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: (0, _classnames2.default)(_map2.default.estimates, _map2.default.estimatesFlex) },
+            _react2.default.createElement(
+              'div',
+              { className: _map2.default.estimateText },
+              _react2.default.createElement(
+                'h4',
+                { className: _map2.default.subHeading },
+                ' Walking '
+              ),
+              _react2.default.createElement(
+                'p',
+                null,
+                ' ',
+                walkingDuration,
+                ' '
+              )
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: _map2.default.estimateText },
+              _react2.default.createElement(
+                'h4',
+                { className: _map2.default.subHeading },
+                ' Metro '
+              ),
+              _react2.default.createElement(
+                'p',
+                null,
+                ' ',
+                transitDuration,
+                ' '
+              )
+            )
+          )
         )
       );
     }
@@ -39572,12 +39585,666 @@ exports.default = MapContainer;
 
 /***/ }),
 /* 189 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-// removed by extract-text-webpack-plugin
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(190);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {"hmr":true}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(192)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../../node_modules/css-loader/index.js?modules=true&localIdentName=[name]__[local]___[hash:base64:5]!./map.css", function() {
+			var newContent = require("!!../../node_modules/css-loader/index.js?modules=true&localIdentName=[name]__[local]___[hash:base64:5]!./map.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
 
 /***/ }),
 /* 190 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(191)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".map__map___28uf8 {\n  width: 100%;\n  height: 55%;\n  border-bottom: solid black;\n  position: absolute;\n}\n/* Optional: Makes the sample page fill the window. */\n.map__form___3T868{\n  height: 50%;\n  width: 50%;\n  position: relative;\n}\n\n.map__estimatesContainer___1xfKw{\n  top: 55%;\n  position: absolute;\n  width: 100%;\n}\n\n.map__estimatesFlex___381Xs{\n  display: inline-flex;\n  flex-direction: row;\n}\n\n.map__estimateText___3DPHT{\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}\n.map__estimates___U_UQ3{\n  position: relative;\n  width: 100%;\n  text-align: center;\n}\n\n.map__heading___1wXm7{\n  text-align: center;\n  top: 55%;\n}\n\n.map__subHeading___14lfF{\n  font-size: 17;\n}\n\n.map__walking___2vyLJ{\n  top: 70%;\n}\n\n.map__metro___3rsR9{\n  top: 75%;\n}\n", ""]);
+
+// exports
+exports.locals = {
+	"map": "map__map___28uf8",
+	"form": "map__form___3T868",
+	"estimatesContainer": "map__estimatesContainer___1xfKw",
+	"estimatesFlex": "map__estimatesFlex___381Xs",
+	"estimateText": "map__estimateText___3DPHT",
+	"estimates": "map__estimates___U_UQ3",
+	"heading": "map__heading___1wXm7",
+	"subHeading": "map__subHeading___14lfF",
+	"walking": "map__walking___2vyLJ",
+	"metro": "map__metro___3rsR9"
+};
+
+/***/ }),
+/* 191 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 192 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+
+var stylesInDom = {};
+
+var	memoize = function (fn) {
+	var memo;
+
+	return function () {
+		if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+		return memo;
+	};
+};
+
+var isOldIE = memoize(function () {
+	// Test for IE <= 9 as proposed by Browserhacks
+	// @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+	// Tests for existence of standard globals is to allow style-loader
+	// to operate correctly into non-standard environments
+	// @see https://github.com/webpack-contrib/style-loader/issues/177
+	return window && document && document.all && !window.atob;
+});
+
+var getElement = (function (fn) {
+	var memo = {};
+
+	return function(selector) {
+		if (typeof memo[selector] === "undefined") {
+			var styleTarget = fn.call(this, selector);
+			// Special case to return head of iframe instead of iframe itself
+			if (styleTarget instanceof window.HTMLIFrameElement) {
+				try {
+					// This will throw an exception if access to iframe is blocked
+					// due to cross-origin restrictions
+					styleTarget = styleTarget.contentDocument.head;
+				} catch(e) {
+					styleTarget = null;
+				}
+			}
+			memo[selector] = styleTarget;
+		}
+		return memo[selector]
+	};
+})(function (target) {
+	return document.querySelector(target)
+});
+
+var singleton = null;
+var	singletonCounter = 0;
+var	stylesInsertedAtTop = [];
+
+var	fixUrls = __webpack_require__(193);
+
+module.exports = function(list, options) {
+	if (typeof DEBUG !== "undefined" && DEBUG) {
+		if (typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (!options.singleton) options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+	if (!options.insertInto) options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (!options.insertAt) options.insertAt = "bottom";
+
+	var styles = listToStyles(list, options);
+
+	addStylesToDom(styles, options);
+
+	return function update (newList) {
+		var mayRemove = [];
+
+		for (var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+
+		if(newList) {
+			var newStyles = listToStyles(newList, options);
+			addStylesToDom(newStyles, options);
+		}
+
+		for (var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+
+			if(domStyle.refs === 0) {
+				for (var j = 0; j < domStyle.parts.length; j++) domStyle.parts[j]();
+
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom (styles, options) {
+	for (var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+
+		if(domStyle) {
+			domStyle.refs++;
+
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles (list, options) {
+	var styles = [];
+	var newStyles = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = options.base ? item[0] + options.base : item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+
+		if(!newStyles[id]) styles.push(newStyles[id] = {id: id, parts: [part]});
+		else newStyles[id].parts.push(part);
+	}
+
+	return styles;
+}
+
+function insertStyleElement (options, style) {
+	var target = getElement(options.insertInto)
+
+	if (!target) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+
+	var lastStyleElementInsertedAtTop = stylesInsertedAtTop[stylesInsertedAtTop.length - 1];
+
+	if (options.insertAt === "top") {
+		if (!lastStyleElementInsertedAtTop) {
+			target.insertBefore(style, target.firstChild);
+		} else if (lastStyleElementInsertedAtTop.nextSibling) {
+			target.insertBefore(style, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			target.appendChild(style);
+		}
+		stylesInsertedAtTop.push(style);
+	} else if (options.insertAt === "bottom") {
+		target.appendChild(style);
+	} else if (typeof options.insertAt === "object" && options.insertAt.before) {
+		var nextSibling = getElement(options.insertInto + " " + options.insertAt.before);
+		target.insertBefore(style, nextSibling);
+	} else {
+		throw new Error("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
+	}
+}
+
+function removeStyleElement (style) {
+	if (style.parentNode === null) return false;
+	style.parentNode.removeChild(style);
+
+	var idx = stylesInsertedAtTop.indexOf(style);
+	if(idx >= 0) {
+		stylesInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement (options) {
+	var style = document.createElement("style");
+
+	options.attrs.type = "text/css";
+
+	addAttrs(style, options.attrs);
+	insertStyleElement(options, style);
+
+	return style;
+}
+
+function createLinkElement (options) {
+	var link = document.createElement("link");
+
+	options.attrs.type = "text/css";
+	options.attrs.rel = "stylesheet";
+
+	addAttrs(link, options.attrs);
+	insertStyleElement(options, link);
+
+	return link;
+}
+
+function addAttrs (el, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		el.setAttribute(key, attrs[key]);
+	});
+}
+
+function addStyle (obj, options) {
+	var style, update, remove, result;
+
+	// If a transform function was defined, run it on the css
+	if (options.transform && obj.css) {
+	    result = options.transform(obj.css);
+
+	    if (result) {
+	    	// If transform returns a value, use that instead of the original css.
+	    	// This allows running runtime transformations on the css.
+	    	obj.css = result;
+	    } else {
+	    	// If the transform function returns a falsy value, don't add this css.
+	    	// This allows conditional loading of css
+	    	return function() {
+	    		// noop
+	    	};
+	    }
+	}
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+
+		style = singleton || (singleton = createStyleElement(options));
+
+		update = applyToSingletonTag.bind(null, style, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+
+	} else if (
+		obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function"
+	) {
+		style = createLinkElement(options);
+		update = updateLink.bind(null, style, options);
+		remove = function () {
+			removeStyleElement(style);
+
+			if(style.href) URL.revokeObjectURL(style.href);
+		};
+	} else {
+		style = createStyleElement(options);
+		update = applyToTag.bind(null, style);
+		remove = function () {
+			removeStyleElement(style);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle (newObj) {
+		if (newObj) {
+			if (
+				newObj.css === obj.css &&
+				newObj.media === obj.media &&
+				newObj.sourceMap === obj.sourceMap
+			) {
+				return;
+			}
+
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag (style, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (style.styleSheet) {
+		style.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = style.childNodes;
+
+		if (childNodes[index]) style.removeChild(childNodes[index]);
+
+		if (childNodes.length) {
+			style.insertBefore(cssNode, childNodes[index]);
+		} else {
+			style.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag (style, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		style.setAttribute("media", media)
+	}
+
+	if(style.styleSheet) {
+		style.styleSheet.cssText = css;
+	} else {
+		while(style.firstChild) {
+			style.removeChild(style.firstChild);
+		}
+
+		style.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink (link, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/*
+		If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+		and there is no publicPath defined then lets turn convertToAbsoluteUrls
+		on by default.  Otherwise default to the convertToAbsoluteUrls option
+		directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls) {
+		css = fixUrls(css);
+	}
+
+	if (sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = link.href;
+
+	link.href = URL.createObjectURL(blob);
+
+	if(oldSrc) URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+/* 193 */
+/***/ (function(module, exports) {
+
+
+/**
+ * When source maps are enabled, `style-loader` uses a link element with a data-uri to
+ * embed the css on the page. This breaks all relative urls because now they are relative to a
+ * bundle instead of the current page.
+ *
+ * One solution is to only use full urls, but that may be impossible.
+ *
+ * Instead, this function "fixes" the relative urls to be absolute according to the current page location.
+ *
+ * A rudimentary test suite is located at `test/fixUrls.js` and can be run via the `npm test` command.
+ *
+ */
+
+module.exports = function (css) {
+  // get current location
+  var location = typeof window !== "undefined" && window.location;
+
+  if (!location) {
+    throw new Error("fixUrls requires window.location");
+  }
+
+	// blank or null?
+	if (!css || typeof css !== "string") {
+	  return css;
+  }
+
+  var baseUrl = location.protocol + "//" + location.host;
+  var currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/");
+
+	// convert each url(...)
+	/*
+	This regular expression is just a way to recursively match brackets within
+	a string.
+
+	 /url\s*\(  = Match on the word "url" with any whitespace after it and then a parens
+	   (  = Start a capturing group
+	     (?:  = Start a non-capturing group
+	         [^)(]  = Match anything that isn't a parentheses
+	         |  = OR
+	         \(  = Match a start parentheses
+	             (?:  = Start another non-capturing groups
+	                 [^)(]+  = Match anything that isn't a parentheses
+	                 |  = OR
+	                 \(  = Match a start parentheses
+	                     [^)(]*  = Match anything that isn't a parentheses
+	                 \)  = Match a end parentheses
+	             )  = End Group
+              *\) = Match anything and then a close parens
+          )  = Close non-capturing group
+          *  = Match anything
+       )  = Close capturing group
+	 \)  = Match a close parens
+
+	 /gi  = Get all matches, not the first.  Be case insensitive.
+	 */
+	var fixedCss = css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function(fullMatch, origUrl) {
+		// strip quotes (if they exist)
+		var unquotedOrigUrl = origUrl
+			.trim()
+			.replace(/^"(.*)"$/, function(o, $1){ return $1; })
+			.replace(/^'(.*)'$/, function(o, $1){ return $1; });
+
+		// already a full url? no change
+		if (/^(#|data:|http:\/\/|https:\/\/|file:\/\/\/)/i.test(unquotedOrigUrl)) {
+		  return fullMatch;
+		}
+
+		// convert the url to a full url
+		var newUrl;
+
+		if (unquotedOrigUrl.indexOf("//") === 0) {
+		  	//TODO: should we add protocol?
+			newUrl = unquotedOrigUrl;
+		} else if (unquotedOrigUrl.indexOf("/") === 0) {
+			// path should be relative to the base url
+			newUrl = baseUrl + unquotedOrigUrl; // already starts with '/'
+		} else {
+			// path should be relative to current directory
+			newUrl = currentDir + unquotedOrigUrl.replace(/^\.\//, ""); // Strip leading './'
+		}
+
+		// send back the fixed url(...)
+		return "url(" + JSON.stringify(newUrl) + ")";
+	});
+
+	// send back the fixed css
+	return fixedCss;
+};
+
+
+/***/ }),
+/* 194 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				classes.push(classNames.apply(null, arg));
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {
+		window.classNames = classNames;
+	}
+}());
+
+
+/***/ }),
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39587,6 +40254,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.default = addScript;
+//adds async script to app
 function addScript(src) {
     //loads script
     var ref = window.document.getElementsByTagName("script")[0];
@@ -39597,7 +40265,7 @@ function addScript(src) {
 }
 
 /***/ }),
-/* 191 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39607,7 +40275,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getWalkTime;
-function getWalkTime(origin, destination) {
+function getWalkTime(service, origin, destination, callback) {
 
   var request = {
     origin: origin,
@@ -39615,22 +40283,19 @@ function getWalkTime(origin, destination) {
     travelMode: 'WALKING'
   };
 
-  var service = new google.maps.DirectionsService();
-
   //console.log(station)
 
   service.route(request, function (response, status) {
     //requests directions for route
     if (status == 'OK') {
-      var walkTime = response.routes[0].legs[0].duration.value;
-      console.log(walkTime);
+      var walkTime = response.routes[0].legs[0].duration.text;
       callback(walkTime);
     }
   });
 }
 
 /***/ }),
-/* 192 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39640,16 +40305,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getDirections;
-function getDirections(origin, destination, mode) {
+//retrieves and displays directions from Google Maps
+
+function getDirections(service, display, origin, destination) {
 
   var request = {
     origin: origin,
     destination: destination,
-    travelMode: mode
+    travelMode: 'WALKING'
   };
-
-  var service = new google.maps.DirectionsService();
-  var display = new google.maps.DirectionsRenderer();
 
   service.route(request, function (response, status) {
     //requests directions for route
@@ -39660,7 +40324,7 @@ function getDirections(origin, destination, mode) {
 }
 
 /***/ }),
-/* 193 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39669,35 +40333,191 @@ function getDirections(origin, destination, mode) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = getRailRoute;
-function getRailRoute(origin, destination) {
+exports.default = getMetroTime;
 
-  var directionsService = new google.maps.DirectionsService();
+var _getStationCode = __webpack_require__(199);
 
-  var request = {
+var _getStationCode2 = _interopRequireDefault(_getStationCode);
+
+var _getMetroRouteInfo = __webpack_require__(200);
+
+var _getMetroRouteInfo2 = _interopRequireDefault(_getMetroRouteInfo);
+
+var _getNextTrain = __webpack_require__(201);
+
+var _getNextTrain2 = _interopRequireDefault(_getNextTrain);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var params = {
+  "api_key": "a6e753a87f8d49a086f85f165ace7a05"
+};
+
+var firstWalk = void 0,
+    duration = void 0;
+
+function getMetroTime(service, travelMode, origin, destination, callback) {
+
+  var request = void 0;
+  request = {
     origin: origin,
     destination: destination,
-    travelMode: 'TRANSIT',
-    transitOptions: {
-      modes: ['RAIL']
-    }
+    travelMode: travelMode
   };
+  if (travelMode == 'TRANSIT') {
+    request['transitOptions'] = {
+      modes: ['RAIL']
+    };
+  }
 
-  directionsService.route(request, function (response, status) {
-    console.log("calculating rail route");
-    if (status == "OK") {
-      console.log(response.routes[0]);
-      for (var x = 1; x < response.routes[0].legs[0].steps.length; x++) {
-        if (response.routes[0].legs[0].steps[x].travel_mode == 'TRANSIT') {
-          console.log("more than one transit leg");
+  service.route(request, function (response, status) {
+    //get Google Maps route
+
+    var transitAvailable = true;
+
+    if (response['routes'].length == 0) {
+      //checks if there are any transit routes available
+      transitAvailable = false;
+      callback("No metro route available");
+      return false;
+    }
+
+    var route = response['routes'][0]['legs'][0]; //there is only one leg returned for routes with two points
+
+    var routeInfo = (0, _getMetroRouteInfo2.default)(route);
+
+    if (!routeInfo) {
+      callback('n/a');
+      return false;
+    }
+
+    firstWalk = routeInfo['firstWalk'];
+    duration = routeInfo['duration']['value'];
+
+    if (!routeInfo['departureStation']) {
+      callback(routeInfo['duration']['text']);
+      return duration;
+    }
+    //get station code for departure station--line must be specified, as some
+    //stations have more than one code
+
+    var stationCode = (0, _getStationCode2.default)(routeInfo['departureStation'], routeInfo['line']);
+
+    var finalDuration = stationCode.then(function (stationInfo) {
+      return (0, _getNextTrain2.default)(stationInfo);
+    }).then(function (response) {
+      var trains = response['Trains'];
+      var nextTrain = void 0; //arrival time for next viable train
+      for (var x = 0; x < trains.length; x++) {
+        //WMATA arrival data is in minutes; must convert to seconds to be compatible with Google data
+        nextTrain = parseInt(trains[x]['Min']);
+
+        if (nextTrain == 'ARR' || nextTrain == 'BRD' || nextTrain == "") {
+          nextTrain = 0;
+        } else {
+          nextTrain *= 60;
+        }
+        if (firstWalk <= nextTrain) {
+          //find first train that will arrive after time to walk to station
+          break;
         }
       }
-    }
+      duration = parseInt(duration) + parseInt(nextTrain);
+
+      var durationHours = Math.floor(duration / 3600);
+      var durationMinutes = Math.floor(duration % 3600 / 60);
+      var hourOrHours = " hours ";
+      if (durationHours == 1) {
+        hourOrHours = " hour ";
+      }
+
+      var nextTrainMinutes = Math.floor(nextTrain % 3600 / 60);
+      duration = durationHours.toString() + hourOrHours + durationMinutes.toString() + " minutes (next train in: " + nextTrainMinutes.toString() + " minutes)";
+
+      callback(duration);
+    });
   });
+}
+//)
+//}
+
+/***/ }),
+/* 199 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getStationCode;
+//getStationCode
+function getStationCode(name, line, callback) {
+
+  var lineNum = "LineCode1";
+
+  switch (line) {
+    case 'Green':
+      line = 'GR';
+      break;
+    case 'Silver':
+      line = 'SV';
+      break;
+    case 'Orange':
+      line = 'OR';
+      break;
+    case 'Red':
+      line = 'RD';
+      break;
+    case 'Blue':
+      line = 'BL';
+      break;
+    case 'Yellow':
+      line = 'YL';
+      break;
+  }
+
+  var wordEnd = void 0;
+
+  if (name.indexOf(" ") == -1) {
+    wordEnd = name.length - 1;
+  } else {
+    wordEnd = name.indexOf(" ");
+  }
+
+  var searchName = "/" + name.substr(0, wordEnd) + "/i"; //searches for name based on first word
+
+  if (searchName == '/Pentagon/i') {
+    if (name == 'Pentagon City Station') {
+      searchName = /pentagon\scity/i;
+    }
+  }
+
+  if (searchName == '/Farragut/i') {
+    //for stations sharing first word, seach whole name
+    if (name == 'Farragut West Station') {
+      searchName = /farragut\swest/i;
+    } else {
+      searchName = /farragut\snorth/i;
+    }
+  }
+
+  var stationCode = $.ajax({
+    url: "http://localhost:3000/api/stations?Name__regex=" + searchName + "&" + lineNum + "__regex=/" + line + "/",
+    dataType: "json",
+    contentType: "application/json",
+    type: "GET",
+    error: function error(err) {
+      return console.log(err);
+    },
+    crossDomain: true
+  });
+  return stationCode;
 }
 
 /***/ }),
-/* 194 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39706,22 +40526,74 @@ function getRailRoute(origin, destination) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = getRailTripDuration;
-function getRailTripDuration(startCode, endCode) {
+exports.default = getMetroRouteInfo;
+//validates that route is a metro route and returns essential information about
+//route for use in travel time estimate
 
-  var params = {
-    "api_key": "a6e753a87f8d49a086f85f165ace7a05",
-    // Request parameters
-    "FromStationCode": startCode,
-    "ToStationCode": endCode
+function getMetroRouteInfo(route) {
+
+  var departureStations = [],
+      arrivalStations = [],
+      lines = [],
+      instructions = [];
+  var firstWalk = null;
+  var routeSteps = route['steps'],
+      duration = route['duration'];
+
+  for (var x = 0; x < routeSteps.length; x++) {
+    var step = routeSteps[x];
+    if (step['travel_mode'] == 'WALKING') {
+      //populates if first step of route is a walk
+      if (x == 0) {
+        firstWalk = step['duration']['value'];
+      }
+    } else if (step['instructions'].charAt(0) == 'M') {
+      //verifies that route is via metro (not bus)
+      departureStations.push(step['transit']['departure_stop']['name']);
+      arrivalStations.push(step['transit']['arrival_stop']['name']);
+      lines.push(step['transit']['line']['short_name']);
+    } else {
+      //returns empty if bus route is found, as this means no metro route is available
+      return false;
+    }
+  }
+
+  if (departureStations.length == 0) {
+    //if no stations are logged, route is a walking route and no metro route
+    return false;
+  }
+  var result = { 'departureStation': departureStations[0],
+    'arrivalStation': arrivalStations[0],
+    'line': lines[0],
+    'firstWalk': firstWalk,
+    'duration': duration
   };
+  return result;
+}
 
-  $.ajax({
-    url: "https://api.wmata.com/Rail.svc/json/jSrcStationToDstStationInfo?" + $.param(params),
+/***/ }),
+/* 201 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getNextTrain;
+//returns next 
+function getNextTrain(stationInfo) {
+  var stationCode = stationInfo[0]['Code'];
+  console.log(stationInfo);
+  var params = {
+    "api_key": "a6e753a87f8d49a086f85f165ace7a05"
+  };
+  var nextTrains = $.ajax({
+    url: "https://api.wmata.com/StationPrediction.svc/json/GetPrediction/" + stationCode + '?' + $.param(params),
     type: "GET"
-  }).then(function (data) {
-    console.log(data);
   });
+  return nextTrains;
 }
 
 /***/ })

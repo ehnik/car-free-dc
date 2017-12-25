@@ -20,7 +20,6 @@ export default function getMetroRouteInfo(route){
       lines.push(step['transit']['line']['short_name'])
     }
     else{ //returns empty if bus route is found, as this means no metro route is available
-      console.log("bus route")
       return false;
     }
   }

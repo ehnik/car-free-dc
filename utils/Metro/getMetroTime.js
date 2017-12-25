@@ -33,30 +33,15 @@ service.route(request, function(response, status){ //get Google Maps route
     }
 
     let route = response['routes'][0]['legs'][0] //there is only one leg returned for routes with two points
-    console.log("route")
-    console.log(route)
-    console.log(response['routes'][0])
-    /*
-    let walkingRoute = false;
-    let routeInfo;
-    let routeSteps = route['steps'];
-    if(routeSteps.length==1&&routeSteps[0]['travel_mode']=='WALKING'){
-      walkingRoute = true
-    }*/
 
     let routeInfo = getRouteBasics(route);
-    console.log("routeInfo")
-    console.log(routeInfo)
 
     if(!routeInfo){
-      console.log('no route')
       callback('n/a');
       return false;
     }
 
     firstWalk = routeInfo['firstWalk'];
-    console.log("first walk")
-    console.log(firstWalk)
     duration = routeInfo['duration']['value'];
 
     if(!routeInfo['departureStation']){
@@ -72,12 +57,7 @@ service.route(request, function(response, status){ //get Google Maps route
         getNextTrain(stationInfo)
         )
         .then( (response) => {
-          console.log("in here")
-          console.log(response)
           let trains = response['Trains'];
-          console.log("trains")
-          console.log(trains)
-          console.log(firstWalk)
           let nextTrain; //arrival time for next viable train
           for(var x = 0; x<trains.length; x++){
             //WMATA arrival data is in minutes; must convert to seconds to be compatible with Google data
@@ -89,17 +69,10 @@ service.route(request, function(response, status){ //get Google Maps route
             else{
               nextTrain *= 60
             }
-
-            console.log("next train")
-            console.log(nextTrain)
             if(firstWalk<=nextTrain){ //find first train that will arrive after time to walk to station
-              console.log("breaking at: " + nextTrain)
               break;
             }
           }
-          console.log("after loop")
-          console.log(duration)
-          console.log(nextTrain)
           duration = parseInt(duration) + parseInt(nextTrain)
 
           let durationHours = Math.floor(duration / 3600);
@@ -110,8 +83,6 @@ service.route(request, function(response, status){ //get Google Maps route
           }
 
           let nextTrainMinutes = Math.floor(nextTrain % 3600 / 60)
-          console.log("next train coming")
-          console.log(nextTrainMinutes)
           duration = durationHours.toString() + hourOrHours +
           durationMinutes.toString() + " minutes (next train in: " + nextTrainMinutes.toString() + " minutes)";
 

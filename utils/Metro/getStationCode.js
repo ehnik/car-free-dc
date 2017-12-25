@@ -35,8 +35,6 @@ export default function getStationCode(name,line,callback) {
 
     let searchName = "/" + name.substr(0, wordEnd) +"/i" //searches for name based on first word
 
-    console.log(name)
-
     if(searchName=='/Pentagon/i'){
       if(name=='Pentagon City Station'){
         searchName = /pentagon\scity/i
@@ -52,11 +50,7 @@ export default function getStationCode(name,line,callback) {
       }
     }
 
-    console.log(searchName)
-    console.log(line)
-
-
-    $.ajax({
+    let stationCode = $.ajax({
               url: "http://localhost:3000/api/stations?Name__regex="+searchName+
               "&" + lineNum + "__regex=/" + line + "/",
               dataType: "json",
@@ -65,30 +59,5 @@ export default function getStationCode(name,line,callback) {
               error: (err)=>console.log(err),
               crossDomain: true
             })
-            .then( (res)=>{
-              console.log("response is: " +res.length)
-              if(res.length>0){
-                console.log('returning')
-                return res
-              }
-              else{
-                console.log('trying second call')
-                lineNum = "lineCode2";
-                $.ajax({
-                    url: "http://localhost:3000/api/stations?Name__regex="+searchName+
-                    "&" + lineNum + "__regex=/" + line + "/",
-                    dataType: "json",
-                    contentType: "application/json",
-                    type: "GET",
-                    error: (err)=>console.log(err),
-                    crossDomain: true
-                })
-              .then((res)=>{
-                console.log("second call")
-                if(res.length>0){
-                  return res
-                }
-              })
-            }
-          })
+    return stationCode;
   }
