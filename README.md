@@ -27,16 +27,16 @@ $ node server_api.js to start up the React app and backend API.
 
 Currently adding the following features to this app:
 
---The WMATA API key is currently exposed. Code exists in the Utils/API folder
+* The WMATA API key is currently exposed. Code exists in the Utils/API folder
 to add the key to the application's backend; I will be rewriting the rest of the
 React code to request the API key from the backend.
 
---I will also be adding in a time estimate for Uber trips. Uber's API has a method
+* I will also be adding in a time estimate for Uber trips. Uber's API has a method
 that returns the estimated Uber pickup time at any given location. I will therefore
 combine this arrival estimate and Google Maps' current driving estimate for
 an Uber estimate.
 
---The station data is added into the MongoDB backend through the getStationList
+* The station data is added into the MongoDB backend through the getStationList
 function, which is called when the Map component mounts. Since the component only
 mounts once, this seeds the database with the requisite data.
 I will be adding a Node file that can be run separately to fill in this data, as
