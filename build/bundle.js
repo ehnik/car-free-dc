@@ -9622,12 +9622,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 _reactDom2.default.render(_react2.default.createElement(_App2.default, null), document.getElementById("root"));
 
-//if (module.hot) {
-//   module.hot.accept('./components/MapContainer.js', function() {
-//     console.log('Accepting the updated printMe module!');
-//   })
-//}
-
 /***/ }),
 /* 83 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -39255,9 +39249,9 @@ var _react = __webpack_require__(32);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _MapContainer = __webpack_require__(188);
+var _Map = __webpack_require__(188);
 
-var _MapContainer2 = _interopRequireDefault(_MapContainer);
+var _Map2 = _interopRequireDefault(_Map);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -39279,7 +39273,7 @@ var App = function (_React$Component) {
   _createClass(App, [{
     key: 'render',
     value: function render() {
-      return _react2.default.createElement(_MapContainer2.default, null);
+      return _react2.default.createElement(_Map2.default, null);
     }
   }]);
 
@@ -39329,6 +39323,10 @@ var _getMetroTime = __webpack_require__(198);
 
 var _getMetroTime2 = _interopRequireDefault(_getMetroTime);
 
+var _getStationList = __webpack_require__(202);
+
+var _getStationList2 = _interopRequireDefault(_getStationList);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -39337,13 +39335,13 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var MapContainer = function (_React$Component) {
-  _inherits(MapContainer, _React$Component);
+var Map = function (_React$Component) {
+  _inherits(Map, _React$Component);
 
-  function MapContainer() {
-    _classCallCheck(this, MapContainer);
+  function Map() {
+    _classCallCheck(this, Map);
 
-    var _this = _possibleConstructorReturn(this, (MapContainer.__proto__ || Object.getPrototypeOf(MapContainer)).call(this));
+    var _this = _possibleConstructorReturn(this, (Map.__proto__ || Object.getPrototypeOf(Map)).call(this));
 
     _this.state = { map: null,
       origin: null,
@@ -39358,9 +39356,11 @@ var MapContainer = function (_React$Component) {
     return _this;
   }
 
-  _createClass(MapContainer, [{
+  _createClass(Map, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      console.log("loaded again");
+      (0, _getStationList2.default)();
       window.initMap = this.initMap;
       // Asynchronously load the Google Maps script with callback initMap()
       (0, _addScript2.default)('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places');
@@ -39458,7 +39458,7 @@ var MapContainer = function (_React$Component) {
     }
   }, {
     key: 'validatePlaceEntry',
-    value: function validatePlaceEntry() {
+    value: function validatePlaceEntry(origin, destination) {
       //checks for valid autocomplete place values
       if (this.state.destination == null) {
         alert("Please enter a valid destination.");
@@ -39502,7 +39502,6 @@ var MapContainer = function (_React$Component) {
     value: function render() {
       var _this4 = this;
 
-      var walkingStyle = 'estimate walking';
       var walkingDuration = this.state.walkingDuration;
       var transitDuration = this.state.transitDuration;
       return _react2.default.createElement(
@@ -39578,10 +39577,10 @@ var MapContainer = function (_React$Component) {
     }
   }]);
 
-  return MapContainer;
+  return Map;
 }(_react2.default.Component);
 
-exports.default = MapContainer;
+exports.default = Map;
 
 /***/ }),
 /* 189 */
@@ -40283,8 +40282,6 @@ function getWalkTime(service, origin, destination, callback) {
     travelMode: 'WALKING'
   };
 
-  //console.log(station)
-
   service.route(request, function (response, status) {
     //requests directions for route
     if (status == 'OK') {
@@ -40438,8 +40435,6 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
     });
   });
 }
-//)
-//}
 
 /***/ }),
 /* 199 */
@@ -40452,7 +40447,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getStationCode;
-//getStationCode
+//Retrieves station code from database
+
+//Unfortunately, Google and WMATA have slightly different naming conventions
+//for metro stations. Therefore, the WMATA-populated
+//station database can't be filtered using Google API-generated station names.
+//However, the first word of the station is consistent across APIs, so
+//it is possible to search the database with the first word of the Google-generated
+//name. There are two pairs of stations (Pentagon and Pentagon City;
+//Farragut West and Farragut North) with identical first words; the function treats
+//these cases individually.
+
 function getStationCode(name, line, callback) {
 
   var lineNum = "LineCode1";
@@ -40594,6 +40599,95 @@ function getNextTrain(stationInfo) {
     type: "GET"
   });
   return nextTrains;
+}
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getStationList;
+
+var _saveData = __webpack_require__(203);
+
+var _saveData2 = _interopRequireDefault(_saveData);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getStationList() {
+
+  var params = {
+    "api_key": "a6e753a87f8d49a086f85f165ace7a05"
+  };
+
+  //makes request to WMATA API for station information
+  var stations = $.ajax({
+    url: "https://api.wmata.com/Rail.svc/json/jStations?" + $.param(params),
+    type: "GET"
+  });
+
+  //Saves retrieved station information in database
+
+  stations.done(function (data) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = data['Stations'][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var station = _step.value;
+
+        (0, _saveData2.default)(station, 'stations');
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+  });
+} //Populates MongoDB database with information for each DC metro station (pulled
+//from WMATA API).
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+          value: true
+});
+exports.default = saveData;
+//Sends post request to backend API
+
+function saveData(data, url) {
+          //loads script
+          var postRequest = $.ajax({
+                    url: "http://localhost:3000/api/" + url,
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    type: "POST",
+                    error: function error(err) {
+                              console.log(err);
+                    },
+                    crossDomain: true
+          });
 }
 
 /***/ })

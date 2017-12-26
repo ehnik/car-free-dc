@@ -1,4 +1,14 @@
-//getStationCode
+//Retrieves station code from database
+
+//Unfortunately, Google and WMATA have slightly different naming conventions
+//for metro stations. Therefore, the WMATA-populated
+//station database can't be filtered using Google API-generated station names.
+//However, the first word of the station is consistent across APIs, so
+//it is possible to search the database with the first word of the Google-generated
+//name. There are two pairs of stations (Pentagon and Pentagon City;
+//Farragut West and Farragut North) with identical first words; the function treats
+//these cases individually.
+
 export default function getStationCode(name,line,callback) {
 
   let lineNum = "LineCode1";

@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const combineLoaders = require('webpack-combine-loaders');
 
 module.exports = {
-  entry: './build/index.js',
+  entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js',

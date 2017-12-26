@@ -1,10 +1,10 @@
 import React from 'react'
-import MapContainer from '../Map/MapContainer.js'
+import Map from '../Map/Map.js'
 
 class App extends React.Component {
   render() {
     return(
-    <MapContainer/>
+    <Map/>
   )}
 }
 

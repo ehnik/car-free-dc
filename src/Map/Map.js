@@ -5,8 +5,9 @@ import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/Walking/getWalkTime';
 import getDirections from '../../utils/getDirections';
 import getMetroTime from '../../utils/Metro/getMetroTime';
+import getStationList from '../../utils/API/getStationList.js'
 
-export default class MapContainer extends React.Component {
+export default class Map extends React.Component {
 
   constructor(){
     super()
@@ -23,6 +24,7 @@ export default class MapContainer extends React.Component {
   }
 
   componentDidMount(){
+    getStationList();
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script with callback initMap()
     addScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyAZpkdkZpwF02oUj-0wPx23vi-qs_FqjcY&callback=initMap&libraries=places')
@@ -107,7 +109,7 @@ export default class MapContainer extends React.Component {
     this.setState({originMarker: null, destinationMarker: null});
   }
 
-  validatePlaceEntry(){ //checks for valid autocomplete place values
+  validatePlaceEntry(origin, destination){ //checks for valid autocomplete place values
     if(this.state.destination==null){
       alert("Please enter a valid destination.")
       return false;
@@ -132,8 +134,8 @@ export default class MapContainer extends React.Component {
       return false
     }
     else{
-      getDirections(this.state.directionsService,this.state.directionsDisplay,
-      this.state.origin, this.state.destination)
+      getDirections(this.state.directionsService,this.state.directionsDisplay, this.state.origin,
+      this.state.destination)
 
       getWalkTime(this.state.directionsService, this.state.origin, this.state.destination,
         (data) => {
@@ -148,7 +150,6 @@ export default class MapContainer extends React.Component {
   }
 
   render(){
-      let walkingStyle = 'estimate walking'
       let walkingDuration = this.state.walkingDuration
       let transitDuration = this.state.transitDuration
       return (

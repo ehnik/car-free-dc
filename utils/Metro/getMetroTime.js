@@ -87,8 +87,6 @@ service.route(request, function(response, status){ //get Google Maps route
           durationMinutes.toString() + " minutes (next train in: " + nextTrainMinutes.toString() + " minutes)";
 
           callback(duration);
-        })
       })
-    }
-//)
-//}
+    })
+  }
