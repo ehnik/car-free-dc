@@ -1,4 +1,5 @@
 //adds async script to app
+
 export default function addScript(src) { //loads script
     var ref = window.document.getElementsByTagName("script")[0];
     var script = window.document.createElement("script");

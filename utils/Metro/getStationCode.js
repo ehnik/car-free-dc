@@ -18,10 +18,10 @@ export default function getStationCode(name,line,callback) {
         line = 'GR'
         break;
     case 'Silver':
-        line = 'SV'
+        line = 'BL'
         break;
     case 'Orange':
-        line = 'OR'
+        line = 'BL'
         break;
     case 'Red':
         line = 'RD'
@@ -30,7 +30,7 @@ export default function getStationCode(name,line,callback) {
         line = 'BL'
         break;
     case 'Yellow':
-        line = 'YL'
+        line = 'GR'
         break;
   }
 

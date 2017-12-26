@@ -1,4 +1,4 @@
-//validates that route is a metro route and returns essential information about
+//verifies that route is a metro route and returns essential information about
 //route for use in travel time estimate
 
 export default function getMetroRouteInfo(route){
@@ -24,14 +24,14 @@ export default function getMetroRouteInfo(route){
     }
   }
 
-  if(departureStations.length==0){ //if no stations are logged, route is a walking route and no metro route
+  if(departureStations.length==0){ //if no stations are logged, route is not a metro route
     return false;
   }
   let result = {'departureStation': departureStations[0],
     'arrivalStation': arrivalStations[0],
     'line': lines[0],
-    'firstWalk': firstWalk,
-    'duration': duration
+    firstWalk,
+    duration
   }
   return result;
 }

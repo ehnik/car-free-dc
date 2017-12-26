@@ -39359,7 +39359,6 @@ var Map = function (_React$Component) {
   _createClass(Map, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      console.log("loaded again");
       (0, _getStationList2.default)();
       window.initMap = this.initMap;
       // Asynchronously load the Google Maps script with callback initMap()
@@ -39408,7 +39407,6 @@ var Map = function (_React$Component) {
       var newState = {},
           coordinates = {},
           newMarker = void 0;
-      console.log("state: " + this.state);
 
       if (location == 'destination') {
         coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();
@@ -40254,6 +40252,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = addScript;
 //adds async script to app
+
 function addScript(src) {
     //loads script
     var ref = window.document.getElementsByTagName("script")[0];
@@ -40302,7 +40301,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getDirections;
-//retrieves and displays directions from Google Maps
+//retrieves and displays directions between two points
 
 function getDirections(service, display, origin, destination) {
 
@@ -40348,15 +40347,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var params = {
   "api_key": "a6e753a87f8d49a086f85f165ace7a05"
-};
-
-var firstWalk = void 0,
-    duration = void 0;
+}; //returns time estimate for metro rail route
 
 function getMetroTime(service, travelMode, origin, destination, callback) {
 
-  var request = void 0;
-  request = {
+  var request = {
     origin: origin,
     destination: destination,
     travelMode: travelMode
@@ -40370,7 +40365,9 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
   service.route(request, function (response, status) {
     //get Google Maps route
 
-    var transitAvailable = true;
+    var firstWalk = void 0,
+        duration = void 0,
+        transitAvailable = true;
 
     if (response['routes'].length == 0) {
       //checks if there are any transit routes available
@@ -40396,7 +40393,7 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
       return duration;
     }
     //get station code for departure station--line must be specified, as some
-    //stations have more than one code
+    //stations have more than one code (for different lines)
 
     var stationCode = (0, _getStationCode2.default)(routeInfo['departureStation'], routeInfo['line']);
 
@@ -40467,10 +40464,10 @@ function getStationCode(name, line, callback) {
       line = 'GR';
       break;
     case 'Silver':
-      line = 'SV';
+      line = 'BL';
       break;
     case 'Orange':
-      line = 'OR';
+      line = 'BL';
       break;
     case 'Red':
       line = 'RD';
@@ -40479,7 +40476,7 @@ function getStationCode(name, line, callback) {
       line = 'BL';
       break;
     case 'Yellow':
-      line = 'YL';
+      line = 'GR';
       break;
   }
 
@@ -40532,7 +40529,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getMetroRouteInfo;
-//validates that route is a metro route and returns essential information about
+//verifies that route is a metro route and returns essential information about
 //route for use in travel time estimate
 
 function getMetroRouteInfo(route) {
@@ -40564,14 +40561,14 @@ function getMetroRouteInfo(route) {
   }
 
   if (departureStations.length == 0) {
-    //if no stations are logged, route is a walking route and no metro route
+    //if no stations are logged, route is not a metro route
     return false;
   }
   var result = { 'departureStation': departureStations[0],
     'arrivalStation': arrivalStations[0],
     'line': lines[0],
-    'firstWalk': firstWalk,
-    'duration': duration
+    firstWalk: firstWalk,
+    duration: duration
   };
   return result;
 }
@@ -40587,10 +40584,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = getNextTrain;
-//returns next 
+//returns next trains arriving at a given station
+
 function getNextTrain(stationInfo) {
   var stationCode = stationInfo[0]['Code'];
-  console.log(stationInfo);
   var params = {
     "api_key": "a6e753a87f8d49a086f85f165ace7a05"
   };

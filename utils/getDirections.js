@@ -1,4 +1,4 @@
-//retrieves and displays directions from Google Maps
+//retrieves and displays directions between two points
 
 export default function getDirections(service,display,origin, destination){
 

@@ -1,3 +1,5 @@
+//returns time estimate for metro rail route
+
 import getStationCode from './getStationCode.js'
 import getRouteBasics from './getMetroRouteInfo.js'
 import getNextTrain from './getNextTrain.js'
@@ -6,12 +8,9 @@ let params = {
           "api_key": "a6e753a87f8d49a086f85f165ace7a05",
 };
 
-let firstWalk, duration;
-
 export default function getMetroTime(service, travelMode, origin, destination, callback){
 
-  let request;
-  request = {
+  let request = {
     origin,
     destination,
     travelMode
@@ -24,7 +23,7 @@ export default function getMetroTime(service, travelMode, origin, destination, c
 
 service.route(request, function(response, status){ //get Google Maps route
 
-    let transitAvailable = true;
+    let firstWalk, duration, transitAvailable = true;
 
     if(response['routes'].length==0){ //checks if there are any transit routes available
       transitAvailable = false;
@@ -49,7 +48,7 @@ service.route(request, function(response, status){ //get Google Maps route
       return duration
     }
       //get station code for departure station--line must be specified, as some
-      //stations have more than one code
+      //stations have more than one code (for different lines)
 
     let stationCode = getStationCode(routeInfo['departureStation'],routeInfo['line'])
 

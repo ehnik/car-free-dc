@@ -61,7 +61,6 @@ export default class Map extends React.Component {
   changePoint(location) { //saves coordinates and adds marker corresponding to
     //user-entered destination or origin
     let newState = {}, coordinates = {}, newMarker;
-    console.log("state: " + this.state)
 
     if(location=='destination'){
       coordinates['lat'] = this.state.autoDestination.getPlace().geometry.location.lat();

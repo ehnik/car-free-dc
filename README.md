@@ -1,5 +1,5 @@
-Car Free DC shows how long it will take to reach a destination by walking or
-taking the DC metro rail system.
+Car Free DC shows car-less DC residents how long it will take to get from Point A to Point B.
+Real-time estimates are currently available for walking or taking the DC metro rail system.
 
 The fastest metro rail route is calculated by combining the route duration estimate
 returned by Google Maps' Directions service and real-time Washington Metro
@@ -8,21 +8,19 @@ estimate, as Google Maps' current algorithm does not include train arrival time.
 (Google will likely change this in the future, as they have for many other US
 cities. But for now, the data is missing.)
 
+Please note that accurate metro estimates are currently only available for
+trips within the DC city limits. Estimates for trips within the larger DMV are will
+be available in the next version.
+
 Please follow the instructions below to run this application on your local machine:
 
-1) Install MongoDB and run mongod on the CLI for handling database requests.
+1) Install MongoDB and run $ mongod on the CLI for handling database requests.
 
-2) Install dependencies and run node server.js and
-node server_api.js to start up the React app and backend API.
+2) Install dependencies and run $ node server.js and
+$ node server_api.js to start up the React app and backend API.
 
 ----
-Additional notes:
-
-Note: the station data is added into the MongoDB backend through the getStationList
-function, which is called when the Map component mounts. Since the component only
-mounts once, this works well enough to seed the database with the requisite data.
-I will be adding a Node file that can be run separately to fill in this data, as
-well.
+Additional notes
 
 Currently adding the following features to this app:
 
@@ -34,3 +32,9 @@ React code to request the API key from the backend.
 that returns the estimated Uber pickup time at any given location. I will therefore
 combine this arrival estimate and Google Maps' current driving estimate for
 an Uber estimate.
+
+--The station data is added into the MongoDB backend through the getStationList
+function, which is called when the Map component mounts. Since the component only
+mounts once, this seeds the database with the requisite data.
+I will be adding a Node file that can be run separately to fill in this data, as
+well.

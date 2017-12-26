@@ -1,3 +1,5 @@
+//Model for station information entries in MongoDB collection.
+
 let restful = require('node-restful');
 let mongoose = restful.mongoose;
 mongoose.connect("mongodb://localhost/api/stations")
