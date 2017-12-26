@@ -1,4 +1,6 @@
-Car Free DC shows car-less DC residents how long it will take to get from Point A to Point B.
+#Car-Free DC
+
+Car-Free DC shows car-less DC residents how long it will take to get from Point A to Point B.
 Real-time estimates are currently available for walking or taking the DC metro rail system.
 
 The fastest metro rail route is calculated by combining the route duration estimate
@@ -12,6 +14,8 @@ Please note that accurate metro estimates are currently only available for
 trips within the DC city limits. Estimates for trips within the larger DMV are will
 be available in the next version.
 
+##Instructions
+
 Please follow the instructions below to run this application on your local machine:
 
 1) Install MongoDB and run $ mongod on the CLI for handling database requests.
@@ -19,8 +23,7 @@ Please follow the instructions below to run this application on your local machi
 2) Install dependencies and run $ node server.js and
 $ node server_api.js to start up the React app and backend API.
 
-----
-Additional notes
+##Additional notes
 
 Currently adding the following features to this app:
 
