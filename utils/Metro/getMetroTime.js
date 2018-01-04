@@ -36,7 +36,7 @@ service.route(request, function(response, status){ //get Google Maps route
     let routeInfo = getRouteBasics(route);
 
     if(!routeInfo){
-      callback('n/a');
+      callback("No metro route available");
       return false;
     }
 
@@ -53,7 +53,7 @@ service.route(request, function(response, status){ //get Google Maps route
     let stationCode = getStationCode(routeInfo['departureStation'],routeInfo['line'])
 
     let finalDuration = stationCode.then( (stationInfo) =>
-        getNextTrain(stationInfo)
+        getNextTrain(stationInfo,routeInfo['line'])
         )
         .then( (response) => {
           let trains = response['Trains'];

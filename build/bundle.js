@@ -40381,7 +40381,7 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
     var routeInfo = (0, _getMetroRouteInfo2.default)(route);
 
     if (!routeInfo) {
-      callback('n/a');
+      callback("No metro route available");
       return false;
     }
 
@@ -40398,7 +40398,7 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
     var stationCode = (0, _getStationCode2.default)(routeInfo['departureStation'], routeInfo['line']);
 
     var finalDuration = stationCode.then(function (stationInfo) {
-      return (0, _getNextTrain2.default)(stationInfo);
+      return (0, _getNextTrain2.default)(stationInfo, routeInfo['line']);
     }).then(function (response) {
       var trains = response['Trains'];
       var nextTrain = void 0; //arrival time for next viable train
@@ -40455,19 +40455,18 @@ exports.default = getStationCode;
 //Farragut West and Farragut North) with identical first words; the function treats
 //these cases individually.
 
-function getStationCode(name, line, callback) {
-
-  var lineNum = "LineCode1";
+function getStationCode(name, line) {
+  var _$;
 
   switch (line) {
     case 'Green':
       line = 'GR';
       break;
     case 'Silver':
-      line = 'BL';
+      line = 'SV';
       break;
     case 'Orange':
-      line = 'BL';
+      line = 'OR';
       break;
     case 'Red':
       line = 'RD';
@@ -40476,7 +40475,7 @@ function getStationCode(name, line, callback) {
       line = 'BL';
       break;
     case 'Yellow':
-      line = 'GR';
+      line = 'YL';
       break;
   }
 
@@ -40505,8 +40504,8 @@ function getStationCode(name, line, callback) {
     }
   }
 
-  var stationCode = $.ajax({
-    url: "http://localhost:3000/api/stations?Name__regex=" + searchName + "&" + lineNum + "__regex=/" + line + "/",
+  var secondResult = $.ajax({
+    url: "http://localhost:3000/api/stations?Name__regex=" + searchName + "&LineCode2__regex=/" + line + "/",
     dataType: "json",
     contentType: "application/json",
     type: "GET",
@@ -40514,6 +40513,49 @@ function getStationCode(name, line, callback) {
       return console.log(err);
     },
     crossDomain: true
+  });
+
+  var thirdResult = $.ajax({
+    url: "http://localhost:3000/api/stations?Name__regex=" + searchName + "&LineCode3__regex=/" + line + "/",
+    dataType: "json",
+    contentType: "application/json",
+    type: "GET",
+    error: function error(err) {
+      return console.log(err);
+    },
+    crossDomain: true
+  });
+
+  var firstResult = $.ajax({
+    url: "http://localhost:3000/api/stations?Name__regex=" + searchName + "&LineCode1__regex=/" + line + "/",
+    dataType: "json",
+    contentType: "application/json",
+    type: "GET",
+    error: function error(err) {
+      return console.log(err);
+    },
+    crossDomain: true
+  });
+
+  var resultArray = [firstResult, secondResult, thirdResult];
+  var stationCode = (_$ = $).when.apply(_$, resultArray).then(function () {
+    for (var _len = arguments.length, data = Array(_len), _key = 0; _key < _len; _key++) {
+      data[_key] = arguments[_key];
+    }
+
+    //console.log(data)
+    //console.log(...data)
+    var code = void 0;
+    data.forEach(function (result) {
+      if (result[0].length > 0) {
+        code = result[0][0];
+      }
+      /*if(result[0].length>0){
+        console.log(result)
+        //return result[2];
+      }*/
+    });
+    return code;
   });
   return stationCode;
 }
@@ -40586,14 +40628,26 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = getNextTrain;
 //returns next trains arriving at a given station
 
-function getNextTrain(stationInfo) {
-  var stationCode = stationInfo[0]['Code'];
+function getNextTrain(stationInfo, line) {
+  console.log("station info");
+  console.log(stationInfo);
+  var stationCode = stationInfo['Code'];
   var params = {
     "api_key": "a6e753a87f8d49a086f85f165ace7a05"
   };
   var nextTrains = $.ajax({
     url: "https://api.wmata.com/StationPrediction.svc/json/GetPrediction/" + stationCode + '?' + $.param(params),
     type: "GET"
+  }).then(function (trains) {
+    console.log(trains);
+    var finalTrains = void 0;
+    trains.forEach(function (train) {
+      if (train['Line'] == line) {
+        console.log(train);
+        finalTrains.push(train);
+      }
+    });
+    return finalTrains;
   });
   return nextTrains;
 }
