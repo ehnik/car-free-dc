@@ -3,9 +3,10 @@
 import getStationCode from './getStationCode.js'
 import getRouteBasics from './getMetroRouteInfo.js'
 import getNextTrain from './getNextTrain.js'
+import convertLineColor from './convertLineColor.js'
 
 let params = {
-          "api_key": "a6e753a87f8d49a086f85f165ace7a05",
+  "api_key": "a6e753a87f8d49a086f85f165ace7a05",
 };
 
 export default function getMetroTime(service, travelMode, origin, destination, callback){
@@ -55,8 +56,7 @@ service.route(request, function(response, status){ //get Google Maps route
     let finalDuration = stationCode.then( (stationInfo) =>
         getNextTrain(stationInfo,routeInfo['line'])
         )
-        .then( (response) => {
-          let trains = response['Trains'];
+        .then( (trains) => {
           let nextTrain; //arrival time for next viable train
           for(var x = 0; x<trains.length; x++){
             //WMATA arrival data is in minutes; must convert to seconds to be compatible with Google data

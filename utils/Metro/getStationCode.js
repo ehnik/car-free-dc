@@ -9,28 +9,11 @@
 //Farragut West and Farragut North) with identical first words; the function treats
 //these cases individually.
 
+import convertLineColor from './convertLineColor.js'
+
 export default function getStationCode(name,line) {
 
-  switch(line) {
-    case 'Green':
-        line = 'GR'
-        break;
-    case 'Silver':
-        line = 'SV'
-        break;
-    case 'Orange':
-        line = 'OR'
-        break;
-    case 'Red':
-        line = 'RD'
-        break;
-    case 'Blue':
-        line = 'BL'
-        break;
-    case 'Yellow':
-        line = 'YL'
-        break;
-  }
+    line = convertLineColor(line)
 
     let wordEnd;
 
@@ -58,52 +41,26 @@ export default function getStationCode(name,line) {
       }
     }
 
-
-    let secondResult = $.ajax({
+    let result = (lineCode)=>{return $.ajax({
                   url: "http://localhost:3000/api/stations?Name__regex="+searchName+
-                  "&LineCode2__regex=/" + line + "/",
+                  "&"+lineCode+"__regex=/" + line + "/",
                   dataType: "json",
                   contentType: "application/json",
                   type: "GET",
                   error: (err)=>console.log(err),
                   crossDomain: true
                 })
+              }
 
-    let thirdResult = $.ajax({
-                  url: "http://localhost:3000/api/stations?Name__regex="+searchName+
-                  "&LineCode3__regex=/" + line + "/",
-                  dataType: "json",
-                  contentType: "application/json",
-                  type: "GET",
-                  error: (err)=>console.log(err),
-                  crossDomain: true
-                })
-
-    let firstResult = $.ajax({
-              url: "http://localhost:3000/api/stations?Name__regex="+searchName+
-              "&LineCode1__regex=/" + line + "/",
-              dataType: "json",
-              contentType: "application/json",
-              type: "GET",
-              error: (err)=>console.log(err),
-              crossDomain: true
-            })
-
-    let resultArray = [firstResult,secondResult,thirdResult];
+    let resultArray = [result('LineCode1'),result('LineCode2'),result('LineCode3')];
     let stationCode = $.when(...resultArray).then((...data)=>{
-    //console.log(data)
-    //console.log(...data)
     let code;
     data.forEach( (result) => {
       if(result[0].length>0){
         code = result[0][0]
       }
-    /*if(result[0].length>0){
-      console.log(result)
-      //return result[2];
-    }*/
     })
     return code
   })
     return stationCode;
-  }
+}
