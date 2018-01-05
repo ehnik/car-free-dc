@@ -10,10 +10,6 @@ estimate, as Google Maps' current algorithm does not include train arrival time.
 (Google will likely change this in the future, as they have for many other US
 cities. But for now, the data is missing.)
 
-Please note that accurate metro estimates are currently only available for
-trips within the DC city limits. Estimates for trips within the larger DMV are will
-be available in the next version.
-
 ## Instructions
 
 Please follow the instructions below to run this application on your local machine:

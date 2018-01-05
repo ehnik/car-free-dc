@@ -62,5 +62,5 @@ export default function getStationCode(name,line) {
     })
     return code
   })
-    return stationCode;
+  return stationCode;
 }
