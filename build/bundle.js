@@ -39350,19 +39350,23 @@ var _getWalkTime = __webpack_require__(197);
 
 var _getWalkTime2 = _interopRequireDefault(_getWalkTime);
 
-var _getDirections = __webpack_require__(198);
+var _getDrivingTime = __webpack_require__(198);
+
+var _getDrivingTime2 = _interopRequireDefault(_getDrivingTime);
+
+var _getDirections = __webpack_require__(199);
 
 var _getDirections2 = _interopRequireDefault(_getDirections);
 
-var _getMetroTime = __webpack_require__(199);
+var _getMetroTime = __webpack_require__(200);
 
 var _getMetroTime2 = _interopRequireDefault(_getMetroTime);
 
-var _getStationList = __webpack_require__(203);
+var _getStationList = __webpack_require__(204);
 
 var _getStationList2 = _interopRequireDefault(_getStationList);
 
-var _getTimeEstimates = __webpack_require__(205);
+var _getTimeEstimates = __webpack_require__(206);
 
 var _getTimeEstimates2 = _interopRequireDefault(_getTimeEstimates);
 
@@ -39514,12 +39518,20 @@ var Map = function (_React$Component) {
 
       event.preventDefault();
       this.getRoutes();
+      (0, _getDrivingTime2.default)(this.state.directionsService, this.state.origin, this.state.destination, function (time) {
+        return _this3.setState({ driveTime: parseInt(time) });
+      });
       (0, _getTimeEstimates2.default)(this.state.origin, function (cars) {
         _this3.setState({ ubers: cars['times'].filter(function (car) {
             return car.localized_display_name.substr(0, 6) == "uberX";
+          }).map(function (car) {
+            return parseInt(car['estimate'] / 60);
           })
         });
         console.log(_this3.state);
+      });
+      (0, _getDrivingTime2.default)(this.state.directionsService, this.state.origin, this.state.destination, function (time) {
+        return console.log(time);
       });
     }
   }, {
@@ -39550,6 +39562,16 @@ var Map = function (_React$Component) {
 
       var walkingDuration = this.state.walkingDuration;
       var transitDuration = this.state.transitDuration;
+      var driveDuration = void 0,
+          uberTime = void 0;
+      if (!this.state.ubers) {
+        driveDuration = null;
+        uberTime = null;
+      } else {
+        driveDuration = parseInt(this.state.ubers) + parseInt(this.state.driveTime);
+        uberTime = "(Uber is " + this.state.ubers + " mins away)";
+      }
+
       return _react2.default.createElement(
         'div',
         null,
@@ -39614,6 +39636,24 @@ var Map = function (_React$Component) {
                 null,
                 ' ',
                 transitDuration,
+                ' '
+              )
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: _map2.default.estimateText },
+              _react2.default.createElement(
+                'h4',
+                { className: _map2.default.subHeading },
+                ' Uber '
+              ),
+              _react2.default.createElement(
+                'p',
+                null,
+                ' ',
+                driveDuration,
+                ' ',
+                uberTime,
                 ' '
               )
             )
@@ -40348,6 +40388,34 @@ function getWalkTime(service, origin, destination, callback) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = getDriveTime;
+function getDriveTime(service, origin, destination, callback) {
+
+  var request = {
+    origin: origin,
+    destination: destination,
+    travelMode: 'DRIVING'
+  };
+
+  service.route(request, function (response, status) {
+    //requests directions for route
+    if (status == 'OK') {
+      var driveTime = response.routes[0].legs[0].duration.text;
+      callback(driveTime);
+    }
+  });
+}
+
+/***/ }),
+/* 199 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = getDirections;
 //retrieves and displays directions between two points
 
@@ -40368,7 +40436,7 @@ function getDirections(service, display, origin, destination) {
 }
 
 /***/ }),
-/* 199 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40379,15 +40447,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = getMetroTime;
 
-var _getStationCode = __webpack_require__(200);
+var _getStationCode = __webpack_require__(201);
 
 var _getStationCode2 = _interopRequireDefault(_getStationCode);
 
-var _getMetroRouteInfo = __webpack_require__(201);
+var _getMetroRouteInfo = __webpack_require__(202);
 
 var _getMetroRouteInfo2 = _interopRequireDefault(_getMetroRouteInfo);
 
-var _getNextTrain = __webpack_require__(202);
+var _getNextTrain = __webpack_require__(203);
 
 var _getNextTrain2 = _interopRequireDefault(_getNextTrain);
 
@@ -40487,7 +40555,7 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
 }
 
 /***/ }),
-/* 200 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40574,7 +40642,7 @@ function getStationCode(name, line) {
 //these cases individually.
 
 /***/ }),
-/* 201 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40629,7 +40697,7 @@ function getMetroRouteInfo(route) {
 }
 
 /***/ }),
-/* 202 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40669,7 +40737,7 @@ function getNextTrain(stationInfo, line) {
 } //returns next trains arriving at a given station
 
 /***/ }),
-/* 203 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40680,7 +40748,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = getStationList;
 
-var _saveData = __webpack_require__(204);
+var _saveData = __webpack_require__(205);
 
 var _saveData2 = _interopRequireDefault(_saveData);
 
@@ -40730,7 +40798,7 @@ function getStationList() {
 //from WMATA API).
 
 /***/ }),
-/* 204 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40758,7 +40826,7 @@ function saveData(data, url) {
 }
 
 /***/ }),
-/* 205 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

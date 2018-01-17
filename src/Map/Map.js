@@ -3,6 +3,7 @@ import styles from './map.css';
 import classNames from 'classnames';
 import addScript from '../../utils/addScript';
 import getWalkTime from '../../utils/Walking/getWalkTime';
+import getDrivingTime from '../../utils/Uber/getDrivingTime';
 import getDirections from '../../utils/getDirections';
 import getMetroTime from '../../utils/Metro/getMetroTime';
 import getStationList from '../../utils/API/getStationList.js'
@@ -126,11 +127,17 @@ export default class Map extends React.Component {
   handleSubmit(event){
     event.preventDefault()
     this.getRoutes();
+    getDrivingTime( this.state.directionsService, this.state.origin,
+    this.state.destination, (time)=>this.setState({driveTime: parseInt(time)}) )
     getTimeEstimates(this.state.origin, (cars)=> {
       this.setState({ubers: cars['times'].filter(
       (car)=> car.localized_display_name.substr(0,6)=="uberX")
+      .map( (car)=>parseInt(car['estimate']/60) )
       })
+      console.log(this.state)
     })
+    getDrivingTime(this.state.directionsService, this.state.origin,
+    this.state.destination, (time)=>console.log(time))
   }
 
 
@@ -158,6 +165,16 @@ export default class Map extends React.Component {
   render(){
       let walkingDuration = this.state.walkingDuration
       let transitDuration = this.state.transitDuration
+      let driveDuration, uberTime;
+      if(!this.state.ubers){
+        driveDuration = null
+        uberTime = null
+      }
+      else{
+        driveDuration = parseInt(this.state.ubers) + parseInt(this.state.driveTime)
+        uberTime = "(Uber is " + this.state.ubers + " mins away)"
+      }
+
       return (
         <div>
             <div ref="map" id="map" className={styles.map}/>
@@ -183,6 +200,10 @@ export default class Map extends React.Component {
                 <div className={styles.estimateText}>
                   <h4 className={styles.subHeading}> Metro </h4>
                   <p> {transitDuration} </p>
+                </div>
+                <div className={styles.estimateText}>
+                  <h4 className={styles.subHeading}> Uber </h4>
+                  <p> {driveDuration} {uberTime} </p>
                 </div>
               </div>
             </div>
