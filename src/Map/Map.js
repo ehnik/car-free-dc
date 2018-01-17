@@ -6,6 +6,7 @@ import getWalkTime from '../../utils/Walking/getWalkTime';
 import getDirections from '../../utils/getDirections';
 import getMetroTime from '../../utils/Metro/getMetroTime';
 import getStationList from '../../utils/API/getStationList.js'
+import getTimeEstimates from '../../utils/Uber/getTimeEstimates.js'
 
 export default class Map extends React.Component {
 
@@ -14,7 +15,7 @@ export default class Map extends React.Component {
     this.state={map: null,
     origin: null,
     destination: null,
-    walkingDuration: null
+    ubers: null
     }
     this.initMap = this.initMap.bind(this);
     this.changePoint = this.changePoint.bind(this);
@@ -125,7 +126,13 @@ export default class Map extends React.Component {
   handleSubmit(event){
     event.preventDefault()
     this.getRoutes();
+    getTimeEstimates(this.state.origin, (cars)=> {
+      this.setState({ubers: cars['times'].filter(
+      (car)=> car.localized_display_name.substr(0,6)=="uberX")
+      })
+    })
   }
+
 
   getRoutes(){ //retrieves metro and walking routes between origin and destination
     let valid = this.validatePlaceEntry()

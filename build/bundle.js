@@ -39362,6 +39362,10 @@ var _getStationList = __webpack_require__(203);
 
 var _getStationList2 = _interopRequireDefault(_getStationList);
 
+var _getTimeEstimates = __webpack_require__(205);
+
+var _getTimeEstimates2 = _interopRequireDefault(_getTimeEstimates);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -39381,7 +39385,7 @@ var Map = function (_React$Component) {
     _this.state = { map: null,
       origin: null,
       destination: null,
-      walkingDuration: null
+      ubers: null
     };
     _this.initMap = _this.initMap.bind(_this);
     _this.changePoint = _this.changePoint.bind(_this);
@@ -39506,13 +39510,22 @@ var Map = function (_React$Component) {
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
+      var _this3 = this;
+
       event.preventDefault();
       this.getRoutes();
+      (0, _getTimeEstimates2.default)(this.state.origin, function (cars) {
+        _this3.setState({ ubers: cars['times'].filter(function (car) {
+            return car.localized_display_name.substr(0, 6) == "uberX";
+          })
+        });
+        console.log(_this3.state);
+      });
     }
   }, {
     key: 'getRoutes',
     value: function getRoutes() {
-      var _this3 = this;
+      var _this4 = this;
 
       //retrieves metro and walking routes between origin and destination
       var valid = this.validatePlaceEntry();
@@ -39522,18 +39535,18 @@ var Map = function (_React$Component) {
         (0, _getDirections2.default)(this.state.directionsService, this.state.directionsDisplay, this.state.origin, this.state.destination);
 
         (0, _getWalkTime2.default)(this.state.directionsService, this.state.origin, this.state.destination, function (data) {
-          _this3.setState({ walkingDuration: data });
+          _this4.setState({ walkingDuration: data });
         });
 
         (0, _getMetroTime2.default)(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination, function (data) {
-          _this3.setState({ transitDuration: data });
+          _this4.setState({ transitDuration: data });
         });
       }
     }
   }, {
     key: 'render',
     value: function render() {
-      var _this4 = this;
+      var _this5 = this;
 
       var walkingDuration = this.state.walkingDuration;
       var transitDuration = this.state.transitDuration;
@@ -39544,7 +39557,7 @@ var Map = function (_React$Component) {
         _react2.default.createElement(
           'form',
           { onSubmit: function onSubmit(event) {
-              _this4.handleSubmit(event);
+              _this5.handleSubmit(event);
             },
             className: _map2.default.form },
           _react2.default.createElement(
@@ -40441,8 +40454,6 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
     var finalDuration = stationCode.then(function (stationInfo) {
       return (0, _getNextTrain2.default)(stationInfo, routeInfo['line']);
     }).then(function (trains) {
-      console.log("trains");
-      console.log(response);
       var nextTrain = void 0; //arrival time for next viable train
       for (var x = 0; x < trains.length; x++) {
         //WMATA arrival data is in minutes; must convert to seconds to be compatible with Google data
@@ -40537,7 +40548,7 @@ function getStationCode(name, line) {
   };
 
   var resultArray = [result('LineCode1'), result('LineCode2'), result('LineCode3')];
-  /*let stationCode = */(_$ = $).when.apply(_$, resultArray).then(function () {
+  var stationCode = (_$ = $).when.apply(_$, resultArray).then(function () {
     for (var _len = arguments.length, data = Array(_len), _key = 0; _key < _len; _key++) {
       data[_key] = arguments[_key];
     }
@@ -40550,7 +40561,7 @@ function getStationCode(name, line) {
     });
     return code;
   });
-  //return stationCode;
+  return stationCode;
 } //Retrieves station code from database
 
 //Unfortunately, Google and WMATA have slightly different naming conventions
@@ -40744,6 +40755,34 @@ function saveData(data, url) {
                     },
                     crossDomain: true
           });
+}
+
+/***/ }),
+/* 205 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = getTimeEstimates;
+//returns arrival time estimates for closest UberX
+
+function getTimeEstimates(origin, callback) {
+
+    var nextCarCall = $.ajax({
+        url: "https://api.uber.com/v1.2/estimates/time",
+        data: {
+            "start_latitude": origin.lat, "start_longitude": origin.lng,
+            "server_token": "GYq7BjNg0k8C3-EqCvUJHQRE9QWAZktopVGTrir9" },
+        error: function error(err) {
+            return console.log(err);
+        }
+    }).then(function (resp) {
+        callback(resp);
+    });
 }
 
 /***/ })
