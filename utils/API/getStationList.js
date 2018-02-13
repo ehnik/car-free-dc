@@ -1,25 +1,33 @@
-//Populates MongoDB database with information for each DC metro station (pulled
-//from WMATA API).
+//Retrieves station data from WMATA
 
-import saveData from './saveData'
+const request = require('request')
 
-export default function getStationList(){
+const saveData = require('./saveData')
 
-  var params = {
-            "api_key": "a6e753a87f8d49a086f85f165ace7a05"
-  };
+module.exports = function getStationList(){
 
-//makes request to WMATA API for station information
-let stations = $.ajax({
-            url: "https://api.wmata.com/Rail.svc/json/jStations?" + $.param(params),
-            type: "GET"
+  let key = "a6e753a87f8d49a086f85f165ace7a05"
+
+  let stationsRequest = "https://api.wmata.com/Rail.svc/json/jStations?api_key=" + key
+
+
+  request.get(stationsRequest, (error,response,body)=> {
+
+    if(!error){
+      //let results = JSON.parse(body)
+      saveData(body);
+
+      //sends search results to client
+    }
+    else{
+      console.log("Please submit your search again.")
+    }
   })
+//makes request to WMATA API for station information
 
 //Saves retrieved station information in database
 
-stations.done(function(data){
-      for(let station of data['Stations']){
-      saveData(station,'stations');
-    }
-  })
+/*stations.done(function(data){
+      saveData(data,'stations');
+  })*/
 }

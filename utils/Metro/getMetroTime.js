@@ -83,7 +83,7 @@ service.route(request, function(response, status){ //get Google Maps route
 
           let nextTrainMinutes = Math.floor(nextTrain % 3600 / 60)
           duration = durationHours.toString() + hourOrHours +
-          durationMinutes.toString() + " minutes (next train in: " + nextTrainMinutes.toString() + " minutes)";
+          durationMinutes.toString() + " mins (next train in: " + nextTrainMinutes.toString() + " minutes)";
 
           callback(duration);
       })

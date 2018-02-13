@@ -1,15 +1,17 @@
-//Sends post request to backend API
+//Sends post request with retrieved station data to backend API
+const request = require('request')
 
-export default function saveData(data,url) { //loads script
-    let postRequest = $.ajax({
-              url: "http://localhost:3000/api/" + url,
-              dataType: "json",
-              contentType: "application/json",
-              data: JSON.stringify(data),
-              type: "POST",
-              error: function(err){
-                console.log(err)
-              },
-              crossDomain: true
-    })
+let stationsRequest = '/api/stations'
+
+module.exports = function postStationList(data){
+  request.post({
+  headers: {'Content-Type': 'application/json'},
+  url: 'http://localhost:3000/api/stations/seed',
+  body: data
+  },
+  (error,response,body)=>{
+    console.log("post req send")
+    console.log(response)
+  }
+)
 }

@@ -152,7 +152,7 @@ export default class Map extends React.Component {
 
       getWalkTime(this.state.directionsService, this.state.origin, this.state.destination,
         (data) => {
-        this.setState({walkingDuration: data})
+        this.setState({walkingDuration: data.replace})
       })
 
       getMetroTime(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination,
@@ -171,7 +171,8 @@ export default class Map extends React.Component {
         uberTime = null
       }
       else{
-        driveDuration = parseInt(this.state.ubers) + parseInt(this.state.driveTime)
+        driveDuration = (parseInt(this.state.ubers) + parseInt(this.state.driveTime)).toString()
+        driveDuration = driveDuration + " mins"
         uberTime = "(Uber is " + this.state.ubers + " mins away)"
       }
 

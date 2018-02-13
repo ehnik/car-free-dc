@@ -39547,7 +39547,7 @@ var Map = function (_React$Component) {
         (0, _getDirections2.default)(this.state.directionsService, this.state.directionsDisplay, this.state.origin, this.state.destination);
 
         (0, _getWalkTime2.default)(this.state.directionsService, this.state.origin, this.state.destination, function (data) {
-          _this4.setState({ walkingDuration: data });
+          _this4.setState({ walkingDuration: data.replace });
         });
 
         (0, _getMetroTime2.default)(this.state.directionsService, 'TRANSIT', this.state.origin, this.state.destination, function (data) {
@@ -39568,7 +39568,8 @@ var Map = function (_React$Component) {
         driveDuration = null;
         uberTime = null;
       } else {
-        driveDuration = parseInt(this.state.ubers) + parseInt(this.state.driveTime);
+        driveDuration = (parseInt(this.state.ubers) + parseInt(this.state.driveTime)).toString();
+        driveDuration = driveDuration + " mins";
         uberTime = "(Uber is " + this.state.ubers + " mins away)";
       }
 
@@ -40547,7 +40548,7 @@ function getMetroTime(service, travelMode, origin, destination, callback) {
       }
 
       var nextTrainMinutes = Math.floor(nextTrain % 3600 / 60);
-      duration = durationHours.toString() + hourOrHours + durationMinutes.toString() + " minutes (next train in: " + nextTrainMinutes.toString() + " minutes)";
+      duration = durationHours.toString() + hourOrHours + durationMinutes.toString() + " mins (next train in: " + nextTrainMinutes.toString() + " minutes)";
 
       callback(duration);
     });
