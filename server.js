@@ -16,28 +16,31 @@ app.options('*', cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+//handles GET request to root
+
 app.get('/', function(req, res){
   res.sendFile("index.html", {root: path.join(__dirname, '/build')});
 })
 
-//the GET and POST create the file station_list.json, containing WMATA station data
+//handles GET request to stations API
 
-app.get('/api/stations/seed',function(req,res){
-  getStationList()
-  res.send('posted');
+app.get('/api/stations',function(req,res){
+  Station.find({}, (err,stations)=>{
+    let stationsObj = {}
+    stationsObj['Stations'] = stations
+    JSON.stringify(stationsObj)
+    res.send(stationsObj);
+  })
 })
 
-app.get('/api/stations/',function(req,res){
-  getStationList()
-  res.send('posted');
-})
-
-app.post('/api/stations',function(req,res){
-  let data = JSON.stringify(req.body)
-  fs.writeFile('./station_list.json', data, (err) => {
-
-    res.send('saved');
+//handles POST request; seeds WMATA station list data to database
+app.post('/api/stations/seed',function(req,res){
+  let data = req.body
+    console.log("adding data")
+    console.log(data['Stations'])
+      data['Stations'].forEach( (station)=>{
+        Station.create(station, (err,station)=>console.log(err))
+      })
   });
-})
 
 app.listen(4000);

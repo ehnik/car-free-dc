@@ -17,10 +17,7 @@ app.use(bodyParser.json());
 
 mongoose.connect("mongodb://localhost/MetroStations")
 
-//routing for API
-//app.use('/api',require('./routes/api'))
-
-//the GET and POST create the file station_list.json, containing WMATA station data
+//handles get request
 
 app.get('/api/stations',function(req,res){
   Station.find({}, (err,stations)=>{
@@ -31,19 +28,14 @@ app.get('/api/stations',function(req,res){
   })
 })
 
+//handles POST request; seeds WMATA station list data to database
 app.post('/api/stations/seed',function(req,res){
   let data = req.body
-    console.log("adding object")
+    console.log("adding data")
     console.log(data['Stations'])
       data['Stations'].forEach( (station)=>{
         Station.create(station, (err,station)=>console.log(err))
       })
   });
-
-  /*fs.writeFile('./station_list.json', data, (err) => {
-    res.send('saved');
-  });*/
-
-
 
 app.listen(3000);
