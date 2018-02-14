@@ -8,7 +8,7 @@ let Schema = mongoose.Schema
 
 let stationSchema = new Schema({
   AddressDetails: Schema.Types.Mixed,
-  Code: String,
+  Code: {type: String, unique: true},
   Lat: Number,
   LineCode1: String,
   LineCode2: String,

@@ -1,10 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const getStationList = require('./utils/API/getStationList')
+const fillStationList = require('./utils/API/fillStationList')
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const Station = require('./models/station')
 
 const app = express();
 
@@ -29,18 +30,30 @@ app.get('/api/stations',function(req,res){
     let stationsObj = {}
     stationsObj['Stations'] = stations
     JSON.stringify(stationsObj)
-    res.send(stationsObj);
+    res.status(200).send(stationsObj);
   })
 })
+
+//triggers database seed with WMATA data
+
+app.get('/api/stations/seed',function(req,res){
+  getStationList()
+  res.status(200).send("ok")
+});
 
 //handles POST request; seeds WMATA station list data to database
 app.post('/api/stations/seed',function(req,res){
   let data = req.body
-    console.log("adding data")
-    console.log(data['Stations'])
-      data['Stations'].forEach( (station)=>{
-        Station.create(station, (err,station)=>console.log(err))
-      })
+  data['Stations'].forEach( (station)=>{
+    Station.create(station, (err,station)=>{
+      err? console.log(err) : console.log(station)
+    })
   });
+  res.status(200).send("ok")
+})
+
+app.get('/', function(req, res){
+  res.status(400).send("Page doesn't exist")
+})
 
 app.listen(4000);
